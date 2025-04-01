@@ -1,4 +1,4 @@
-﻿$(window).load(function () {
+$(window).load(function () {
   $(".loading").fadeOut()
 })
 
@@ -245,7 +245,7 @@ $(function () {
         containLabel: true
       },
       legend: {
-        data: ['字段1', '字段2'],
+        data: ['国内', '国外'],
         right: 'center',
         top: 0,
         textStyle: {
@@ -274,7 +274,7 @@ $(function () {
 
         },
 
-        data: ['17年3月', '17年6月', '17年9月', '17年12月', '18年3月', '18年6月', '18年9月', '18年12月', '19年3月', '19年6月', '19年9月', '19年12月']
+        data: ['1月', '2月', '3月']
 
       }, {
 
@@ -312,7 +312,7 @@ $(function () {
       }],
       series: [
         {
-          name: '字段1',
+          name: '国内',
           type: 'line',
           smooth: true,
           symbol: 'circle',
@@ -343,10 +343,10 @@ $(function () {
               borderWidth: 12
             }
           },
-          data: [12.50, 14.4, 16.1, 14.9, 20.1, 17.2, 17.0, 13.42, 20.12, 18.94, 17.27, 16.10]
+          data: [12.50, 14.4, 16.1]
 
         }, {
-          name: '字段2',
+          name: '国外',
           type: 'line',
           smooth: true,
           symbol: 'circle',
@@ -378,7 +378,7 @@ $(function () {
               borderWidth: 12
             }
           },
-          data: [-6.4, 0.1, 6.6, 11.2, 42.1, 26.0, 20.2, 18.31, 21.59, 24.42, 34.03, 32.9]
+          data: [-41.9, 39.9, 27.7]
         },
       ]
     };
@@ -525,7 +525,7 @@ $(function () {
         "left": "10%",
       },
       legend: {
-        data: ['客户数', '增长率'],
+        data: ['国内新客户', '国外新客户', '增长率'],
         right: 'center',
         top: 0,
         textStyle: {
@@ -538,7 +538,7 @@ $(function () {
         {
           "type": "category",
 
-          data: ['2016', '2017', '2018', '2019'],
+          data: ['1月份', '2月份', '3月份'],
           axisLine: { lineStyle: { color: "rgba(255,255,255,.1)" } },
           axisLabel: {
             textStyle: { color: "rgba(255,255,255,.7)", fontSize: '14', },
@@ -575,15 +575,13 @@ $(function () {
         },
       ],
       "series": [
-
         {
-          "name": "客户数",
+          "name": "国内新客户",
           "type": "bar",
           "data": [
-            18453.35, 20572.22, 24274.22, 30500.00
+            30, 45, 21
           ],
           "barWidth": "20%",
-
           "itemStyle": {
             "normal": {
               barBorderRadius: 15,
@@ -599,11 +597,31 @@ $(function () {
           "barGap": "0"
         },
         {
+          "name": "国外新客户",
+          "type": "bar",
+          "data": [
+            44, 24, 77
+          ],
+          "barWidth": "20%",
+          "itemStyle": {
+            "normal": {
+              barBorderRadius: 15,
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                offset: 0,
+                color: '#03c893'
+              }, {
+                offset: 1,
+                color: '#0091ff'
+              }]),
+            }
+          },
+          "barGap": "0"
+        },
+        {
           "name": "增长率",
           "type": "line",
           "yAxisIndex": 1,
-
-          "data": [0, 11.48, 18.00, 25.65],
+          "data": [11.48, 18.00, 25.6],
           lineStyle: {
             normal: {
               width: 2
@@ -612,7 +630,6 @@ $(function () {
           "itemStyle": {
             "normal": {
               "color": "#ff3300",
-
             }
           },
           "smooth": true
@@ -652,7 +669,7 @@ $(function () {
             fontSize: '14',
           }
         },
-        data: ['1月份', '2月份', '3月份', '4月份', '5月份', '6月份', '7月份', '8月份', '9月份']
+        data: ['LT玻璃陶瓷', '3D锆块', 'HT锆块', 'HT玻璃陶瓷', '4D锆块']
 
       }, {
         axisTick: 'none',
@@ -663,7 +680,7 @@ $(function () {
             fontSize: '14',
           }
         },
-        data: [1514, 1619, 1623, 1968, 2158, 2456, 3506, 4664, 8390]
+        data: [3985, 5047, 5711, 7167, 18908]
 
       }, {
         name: '单位：件',
@@ -683,7 +700,7 @@ $(function () {
         name: '条',
         type: 'bar',
         yAxisIndex: 0,
-        data: [25, 30, 34, 40, 43, 48, 52, 56, 70],
+        data: [10, 12, 14, 18, 45],
         label: {
           normal: {
             show: true,
@@ -742,11 +759,10 @@ $(function () {
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('echarts6'));
 
-
     option = {
       title: {
-        text: '5132',
-        subtext: '总体',
+        text: '',
+        subtext: 'TOP6',
         x: 'center',
         y: '40%',
         textStyle: {
@@ -758,7 +774,6 @@ $(function () {
           color: '#90979c',
           fontSize: 16,
           lineHeight: 10,
-
         },
       },
       tooltip: {
@@ -777,27 +792,35 @@ $(function () {
       series: [{
         name: '访问来源',
         type: 'pie',
-        radius: ['50%', '70%'],
+        radius: ['40%', '60%'],
         center: ['50%', '50%'],
-        color: ['rgb(131,249,103)', '#FBFE27', '#FE5050', '#1DB7E5'], //'#FBFE27','rgb(11,228,96)','#FE5050'
+        color: ['rgb(131,249,103)', '#FBFE27', '#FE5050', '#1DB7E5', '#FFA500', '#FFD700'], // 添加第六个颜色
         data: [{
-          "value": 1924,
+          "value": 7546217,
           "name": "东南亚"
         }, {
-          "value": 1055,
+          "value": 4321286,
+          "name": "欧洲"
+        }, {
+          "value": 2401803,
+          "name": "美国"
+        }, {
+          "value": 1290268,
           "name": "中东"
         }, {
-          "value": 1532,
+          "value": 2154830,
           "name": "俄语"
-        }
-        ].sort(function (a, b) {
+        }, {
+          "value": 1500000,
+          "name": "西语"
+        }].sort(function (a, b) {
           return a.value - b.value
         }),
         roseType: 'radius',
 
         label: {
           normal: {
-            formatter: ['{c|{c}万}', '{b|{b}}'].join('\n'),
+            formatter: ['{c|{c}}', '{b|{b}}'].join('\n'),
             rich: {
               c: {
                 color: 'rgb(241,246,104)',
@@ -811,6 +834,10 @@ $(function () {
                 height: 44
               },
             },
+            position: 'outside', // 将标签位置设置为外部
+            alignTo: 'labelLine', // 对齐到标签线
+            margin: [0, -40], // 调整标签的边距
+            bleedMargin: 5 // 调整标签的溢出边距
           }
         },
         labelLine: {
@@ -821,12 +848,10 @@ $(function () {
             smooth: 0.2,
             length: 10,
             length2: 20,
-
           }
         }
       }]
     };
-
 
     // 使用刚指定的配置项和数据显示图表。
     myChart.setOption(option);
@@ -835,11 +860,10 @@ $(function () {
     });
   }
 
-
   function pe01() {
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('pe01'));
-    var txt = 81
+    var txt = 40
     option = {
       title: {
         text: txt + '%',
@@ -900,7 +924,7 @@ $(function () {
   function pe02() {
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('pe02'));
-    var txt = 17
+    var txt = 60
     option = {
       title: {
         text: txt + '%',
@@ -960,7 +984,7 @@ $(function () {
   function pe03() {
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('pe03'));
-    var txt = 2
+    var txt = 75
     option = {
       title: {
         text: txt + '%',
@@ -1018,6 +1042,8 @@ $(function () {
       myChart.resize();
     });
   }
+
+
 })
 
 
