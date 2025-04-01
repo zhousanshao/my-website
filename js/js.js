@@ -41,7 +41,7 @@ $(function () {
         "left": "30",
       },
       legend: {
-        data: ['字段1', '字段2', '字段3', '字段4', '字段5', '字段6'],
+        data: ['销售', '成本', '利润', '销售变化', '成本变化', '利润变化'],
         right: 'center', width: '100%',
         textStyle: {
           color: "#fff"
@@ -103,7 +103,7 @@ $(function () {
       "series": [
 
         {
-          "name": "字段1",
+          "name": "销售",
           "type": "bar",
           "data": [36.6, 38.80, 40.84, 41.60],
           "barWidth": "15%",
@@ -122,7 +122,7 @@ $(function () {
           "barGap": "0.2"
         },
         {
-          "name": "字段2",
+          "name": "成本",
           "type": "bar",
           "data": [14.8, 14.1, 15, 16.30],
           "barWidth": "15%",
@@ -141,7 +141,7 @@ $(function () {
           "barGap": "0.2"
         },
         {
-          "name": "字段3",
+          "name": "利润",
           "type": "bar",
           "data": [9.2, 9.1, 9.85, 8.9],
           "barWidth": "15%",
@@ -160,7 +160,7 @@ $(function () {
           "barGap": "0.2"
         },
         {
-          "name": "字段4",
+          "name": "销售变化",
           "type": "line",
           smooth: true,
           "yAxisIndex": 1,
@@ -180,7 +180,7 @@ $(function () {
         }
         ,
         {
-          "name": "字段5",
+          "name": "成本变化",
           "type": "line",
           "yAxisIndex": 1,
 
@@ -199,7 +199,7 @@ $(function () {
           "smooth": true
         },
         {
-          "name": "字段6",
+          "name": "利润变化",
           "type": "line",
           "yAxisIndex": 1,
 
@@ -343,7 +343,7 @@ $(function () {
               borderWidth: 12
             }
           },
-          data: [12.50, 14.4, 16.1]
+          data: [12.50, 30.6, 85.5]
 
         }, {
           name: '国外',
@@ -402,7 +402,7 @@ $(function () {
         }
       },
       legend: {
-        data: ['目标', '实际', '相差'],
+        data: ['4D锆块', '玻璃陶瓷', '3D锆块'],
         right: 'center',
         top: 0,
         textStyle: {
@@ -421,7 +421,7 @@ $(function () {
       },
       xAxis: {
         type: 'category',
-        data: ['1月份', '2月份', '3月份', '4月份', '5月份', '6月份', '7月份', '8月份', '9月份', '10月份'],
+        data: ['1月份', '2月份', '3月份'],
         axisLine: {
           lineStyle: {
             color: 'white'
@@ -463,7 +463,7 @@ $(function () {
       },
 
       series: [{
-        name: '目标',
+        name: '4D锆块',
         type: 'bar',
         stack: 'a',
         barWidth: '30', barGap: 0,
@@ -472,10 +472,10 @@ $(function () {
             color: '#8bd46e',
           }
         },
-        data: [331, 497, 440, 81, 163, 366, 57, 188, 172, 2295]
+        data: [9198, 11545, 18908]
       },
       {
-        name: '实际',
+        name: '玻璃陶瓷',
         type: 'bar',
         stack: 'a',
         barWidth: '30', barGap: 0,
@@ -485,10 +485,10 @@ $(function () {
             barBorderRadius: 0,
           }
         },
-        data: [48, -97, 56, -59, 90, 98, 64, 61, -8, 253]
+        data: [2476, 18571, 11152]
       },
       {
-        name: '相差',
+        name: '3D锆块',
         type: 'bar',
         stack: 'a',
         barWidth: '30', barGap: 0,
@@ -498,7 +498,7 @@ $(function () {
             barBorderRadius: 0,
           }
         },
-        data: [-13, -21, -112, 5, 0, -5, 72, -3, 8, -69]
+        data: [3571, 8126, 5047]
       }
       ]
     };
@@ -579,7 +579,7 @@ $(function () {
           "name": "国内新客户",
           "type": "bar",
           "data": [
-            30, 45, 21
+            8, 16, 27
           ],
           "barWidth": "20%",
           "itemStyle": {
@@ -621,7 +621,7 @@ $(function () {
           "name": "增长率",
           "type": "line",
           "yAxisIndex": 1,
-          "data": [11.48, 18.00, 25.6],
+          "data": [11.48, -23, 160],
           lineStyle: {
             normal: {
               width: 2
@@ -669,7 +669,7 @@ $(function () {
             fontSize: '14',
           }
         },
-        data: ['LT玻璃陶瓷', '3D锆块', 'HT锆块', 'HT玻璃陶瓷', '4D锆块']
+        data: ['谢冬玲', '赵佳茜', '王婷', '谢然', '杨总']
 
       }, {
         axisTick: 'none',
@@ -680,7 +680,7 @@ $(function () {
             fontSize: '14',
           }
         },
-        data: [3985, 5047, 5711, 7167, 18908]
+        data: [1027579, 1441392, 1563608, 3137628, 4784345]
 
       }, {
         name: '单位：件',
@@ -700,7 +700,7 @@ $(function () {
         name: '条',
         type: 'bar',
         yAxisIndex: 0,
-        data: [10, 12, 14, 18, 45],
+        data: [4.8, 6.7, 7.3, 14.6, 22.2],
         label: {
           normal: {
             show: true,
@@ -863,7 +863,7 @@ $(function () {
   function pe01() {
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('pe01'));
-    var txt = 40
+    var txt = 13
     option = {
       title: {
         text: txt + '%',
@@ -924,7 +924,7 @@ $(function () {
   function pe02() {
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('pe02'));
-    var txt = 60
+    var txt = 87
     option = {
       title: {
         text: txt + '%',
