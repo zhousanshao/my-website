@@ -14,6 +14,8 @@
                     colors: {
                         primary: '#0078d4',
                         secondary: '#2d7d4d',
+                        success: '#10b981',
+                        warning: '#f59e0b',
                     },
                     fontFamily: {
                         sans: ['Segoe UI', 'system-ui', 'sans-serif'],
@@ -70,37 +72,63 @@
     <!-- Power BI 报表区域 (初始隐藏) -->
     <div id="report-section" class="w-full max-w-6xl hidden">
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="bg-primary p-4 text-white flex justify-between items-center">
-                <!-- 修改后的标题区域 -->
-                <div class="flex-1 text-center">
-                    <h1 class="text-xl font-bold flex items-center justify-center">
+            <div class="bg-primary p-4 text-white flex flex-wrap items-center justify-between gap-3">
+                <!-- 左上角标题 -->
+                <div>
+                    <h1 class="text-xl font-bold flex items-center">
                         <i class="fa fa-bar-chart mr-2"></i>玉汝成 Power BI智能看板
                     </h1>
                 </div>
-                <button id="logout-btn"
-                    class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded transition text-sm">
-                    <i class="fa fa-sign-out mr-1"></i> 退出
-                </button>
+                
+                <!-- 右侧刷新控制和状态区域 -->
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="flex items-center text-sm">
+                        <span class="mr-2">下次刷新:</span>
+                        <span id="next-refresh-countdown" class="font-medium text-white/90">10秒</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                        <span id="last-refresh-status" class="mr-2">最后刷新:</span>
+                        <span id="last-refresh-time" class="font-medium">加载中...</span>
+                    </div>
+                    
+                    <button id="manual-refresh-btn" 
+                        class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded transition text-sm flex items-center">
+                        <i class="fa fa-refresh mr-1.5"></i> 手动刷新
+                    </button>
+                    
+                    <button id="logout-btn"
+                        class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded transition text-sm">
+                        <i class="fa fa-sign-out mr-1.5"></i> 退出
+                    </button>
+                </div>
             </div>
+            
             <div class="p-4">
-                <!-- 已更新为你的Power BI嵌入代码 -->
-                <iframe width="100%" height="700"
-                    src="https://app.powerbi.com/view?r=eyJrIjoiM2Q4NmYwZmItMWViYy00MDNhLWE0ZDktYTNmMjdlODRmZmQwIiwidCI6IjZmN2YwMzZiLTk2MjMtNDkxNS04ZWI1LTFmOTc2NDExMDlkNiIsImMiOjEwfQ%3D%3D"
-                    frameborder="0" allowFullScreen="true"></iframe>
+                <!-- 刷新状态指示器 -->
+                <div id="refresh-indicator" class="mb-2 text-sm text-warning hidden">
+                    <i class="fa fa-refresh fa-spin mr-1.5"></i> 正在刷新页面...
+                </div>
+                
+                <!-- Power BI嵌入容器 -->
+                <div id="powerbi-container">
+                    <iframe id="powerbi-iframe" width="100%" height="700"
+                        src="https://app.powerbi.com/view?r=eyJrIjoiM2Q4NmYwZmItMWViYy00MDNhLWE0ZDktYTNmMjdlODRmZmQwIiwidCI6IjZmN2YwMzZiLTk2MjMtNDkxNS04ZWI1LTFmOTc2NDExMDlkNiIsImMiOjEwfQ%3D%3D"
+                        frameborder="0" allowFullScreen="true"></iframe>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Power BI 客户端库 -->
-    <script src="https://microsoft.github.io/PowerBI-JavaScript/dist/powerbi.min.js"></script>
-
     <script>
-        // 配置 - 已设置密码为688781
-        const ACCESS_PASSWORD = "688781"; // 密码已设置
-        const POWERBI_REPORT_ID = "你的报表ID";
-        const POWERBI_EMBED_URL = "https://app.powerbi.com/view?r=eyJrIjoiM2Q4NmYwZmItMWViYy00MDNhLWE0ZDktYTNmMjdlODRmZmQwIiwidCI6IjZmN2YwMzZiLTk2MjMtNDkxNS04ZWI1LTFmOTc2NDExMDlkNiIsImMiOjEwfQ%3D%3D";
-        const POWERBI_ACCESS_TOKEN = "你的访问令牌"; // 注意：生产环境需要动态获取
-
+        // 配置
+        const ACCESS_PASSWORD = "688781";
+        const AUTH_STORAGE_KEY = "powerbi_auth_status"; // 用于本地存储登录状态的键名
+        const REFRESH_INTERVAL = 3600; // 自动刷新间隔（秒）
+        
+        // 全局变量
+        let refreshTimer = null;
+        let countdown = REFRESH_INTERVAL;
+        
         // DOM 元素
         const loginSection = document.getElementById('login-section');
         const reportSection = document.getElementById('report-section');
@@ -109,6 +137,32 @@
         const logoutBtn = document.getElementById('logout-btn');
         const errorMessage = document.getElementById('error-message');
         const togglePassword = document.getElementById('toggle-password');
+        const refreshIndicator = document.getElementById('refresh-indicator');
+        const lastRefreshTime = document.getElementById('last-refresh-time');
+        const nextRefreshCountdown = document.getElementById('next-refresh-countdown');
+        const manualRefreshBtn = document.getElementById('manual-refresh-btn');
+
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+        });
+
+        // 检查登录状态 - 从本地存储获取
+        function checkLoginStatus() {
+            const isAuthenticated = localStorage.getItem(AUTH_STORAGE_KEY) === 'true';
+            if (isAuthenticated) {
+                // 已登录，显示报表区域并启动自动刷新
+                loginSection.classList.add('hidden');
+                reportSection.classList.remove('hidden');
+                updateLastRefreshTime();
+                startAutoRefresh();
+            } else {
+                // 未登录，显示登录区域并停止自动刷新
+                loginSection.classList.remove('hidden');
+                reportSection.classList.add('hidden');
+                stopAutoRefresh();
+            }
+        }
 
         // 切换密码可见性
         togglePassword.addEventListener('click', () => {
@@ -124,13 +178,11 @@
             const password = passwordInput.value.trim();
 
             if (password === ACCESS_PASSWORD) {
-                // 密码正确，显示报表区域
-                loginSection.classList.add('hidden');
-                reportSection.classList.remove('hidden');
+                // 密码正确，保存登录状态到本地存储
+                localStorage.setItem(AUTH_STORAGE_KEY, 'true');
+                checkLoginStatus();
                 errorMessage.classList.add('hidden');
-
-                // 嵌入Power BI报表
-                embedPowerBIReport();
+                passwordInput.value = '';
             } else {
                 // 密码错误
                 errorMessage.classList.remove('hidden');
@@ -152,50 +204,86 @@
 
         // 退出登录
         logoutBtn.addEventListener('click', () => {
-            reportSection.classList.add('hidden');
-            loginSection.classList.remove('hidden');
-            passwordInput.value = '';
+            // 清除本地存储的登录状态
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            checkLoginStatus();
         });
 
-        // 嵌入Power BI报表
-        function embedPowerBIReport() {
-            // 配置报表嵌入选项
-            const embedConfig = {
-                type: 'report',
-                id: POWERBI_REPORT_ID,
-                embedUrl: POWERBI_EMBED_URL,
-                accessToken: POWERBI_ACCESS_TOKEN,
-                tokenType: powerbi.models.TokenType.Aad,
-                settings: {
-                    panes: {
-                        filters: {
-                            visible: true
-                        },
-                        pageNavigation: {
-                            visible: true
-                        }
-                    }
+        // 手动刷新按钮 - 刷新整个页面
+        manualRefreshBtn.addEventListener('click', () => {
+            performRefresh();
+        });
+
+        // 开始自动刷新计时器
+        function startAutoRefresh() {
+            // 清除现有计时器
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+            }
+            
+            // 重置倒计时
+            countdown = REFRESH_INTERVAL;
+            updateCountdownDisplay();
+            
+            // 设置新计时器
+            refreshTimer = setInterval(() => {
+                countdown--;
+                updateCountdownDisplay();
+                
+                // 倒计时结束，执行刷新
+                if (countdown <= 0) {
+                    performRefresh();
                 }
-            };
+            }, 1000);
+        }
 
-            // 获取嵌入容器
-            const embedContainer = document.querySelector('.powerbi-embed');
+        // 停止自动刷新计时器
+        function stopAutoRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+        }
 
-            // 嵌入报表
-            const report = powerbi.embed(embedContainer, embedConfig);
+        // 执行刷新操作
+        function performRefresh() {
+            // 显示刷新指示器
+            refreshIndicator.classList.remove('hidden');
+            
+            // 停止计时器
+            stopAutoRefresh();
+            
+            // 稍等片刻再刷新，让用户看到刷新提示
+            setTimeout(() => {
+                // 刷新前更新最后刷新时间
+                updateLastRefreshTime();
+                // 刷新页面
+                window.location.reload();
+            }, 500);
+        }
 
-            // 处理报表加载事件
-            report.on('loaded', () => {
-                console.log('报表加载完成');
+        // 更新倒计时显示
+        function updateCountdownDisplay() {
+            nextRefreshCountdown.textContent = `${countdown}秒`;
+        }
+
+        // 更新最后刷新时间显示
+        function updateLastRefreshTime() {
+            const now = new Date();
+            // 格式化时间为 年-月-日 时:分:秒
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
             });
-
-            // 处理错误
-            report.on('error', (error) => {
-                console.error('报表错误:', error);
-                alert('报表加载失败，请刷新页面重试');
-            });
+            
+            lastRefreshTime.textContent = timeString;
         }
     </script>
 </body>
 
-</html>    
+</html>
+    
