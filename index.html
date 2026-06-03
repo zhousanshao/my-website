@@ -1,289 +1,526 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>受保护的Power BI报表</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0078d4',
-                        secondary: '#2d7d4d',
-                        success: '#10b981',
-                        warning: '#f59e0b',
-                    },
-                    fontFamily: {
-                        sans: ['Segoe UI', 'system-ui', 'sans-serif'],
-                    },
-                }
-            }
+    <title>玉汝成出库数据智能看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        /* 基础样式复位与科技网格背景 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .glass {
-                background: rgba(255, 255, 255, 0.25);
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
-            }
+        body {
+            background-color: #020617;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(16, 38, 119, 0.7) 0%, transparent 55%),
+                radial-gradient(circle at 90% 80%, rgba(10, 24, 75, 0.5) 0%, transparent 40%);
+            background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px 10px 10px;
         }
+
+        /* 🔒 密码访问锁屏控制层样式 */
+        #authOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #020617;
+            background-image: radial-gradient(circle at 50% 50%, rgba(16, 38, 119, 0.8) 0%, #020617 70%);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-box {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            padding: 40px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), inset 0 0 20px rgba(0, 240, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        .login-box::before {
+            content: ""; position: absolute; top: -1px; left: -1px; width: 20px; height: 20px; border: 2px solid #00f0ff; border-bottom: 0; border-right: 0;
+        }
+        .login-box::after {
+            content: ""; position: absolute; bottom: -1px; right: -1px; width: 20px; height: 20px; border: 2px solid #00f0ff; border-top: 0; border-left: 0;
+        }
+        .login-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+        .password-input {
+            width: 100%;
+            background: rgba(2, 6, 23, 0.8);
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            padding: 12px 16px;
+            color: #00f0ff;
+            font-size: 16px;
+            border-radius: 6px;
+            outline: none;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+            transition: all 0.3s;
+        }
+        .password-input:focus {
+            border-color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #0072ff, #00f0ff);
+            border: none;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            transition: all 0.3s;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6);
+        }
+        .error-msg {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 12px;
+            display: none;
+            font-weight: 500;
+        }
+
+        /* ⚙️ 看板主体结构样式 */
+        #mainDashboard {
+            display: none; /* 默认隐藏，验证通过后显示 */
+            flex-direction: column;
+            height: 100vh;
+        }
+        .header {
+            height: 80px;
+            display: flex;
+            justify-between: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: relative;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0));
+        }
+        .header::before {
+            content: ''; position: absolute; bottom: 15px; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, rgba(0,240,255,0) 0%, rgba(0,240,255,0.4) 30%, rgba(0,240,255,0.4) 70%, rgba(0,240,255,0) 100%);
+        }
+        .header::after {
+            content: ''; position: absolute; bottom: 12px; left: 30%; width: 40%; height: 3px;
+            background: linear-gradient(90deg, transparent, #00f0ff, #0072ff, transparent); box-shadow: 0 0 10px #00f0ff;
+        }
+        .header .title {
+            font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: 6px; text-align: center;
+            background: linear-gradient(to bottom, #ffffff 40%, #00f0ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.4); flex: 1; z-index: 2;
+        }
+        .filter-container { width: 320px; display: flex; align-items: center; gap: 12px; z-index: 2; }
+        .filter-label { font-size: 15px; color: #94a3b8; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .month-select {
+            background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(0, 240, 255, 0.5); color: #00f0ff;
+            padding: 8px 16px; font-size: 15px; font-weight: 600; border-radius: 4px; outline: none; cursor: pointer;
+            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2); transition: all 0.3s;
+        }
+        .month-select:hover, .month-select:focus { border-color: #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.5); }
+        .month-select option { background: #0f172a; color: #fff; }
+        .header .time { font-size: 18px; color: #38bdf8; font-family: 'Courier New', Courier, monospace; font-weight: bold; width: 320px; text-align: right; z-index: 2; letter-spacing: 1px; }
+        
+        .dashboard-content { flex: 1; padding: 10px; display: grid; grid-template-rows: 1.1fr 2fr 2fr; gap: 20px; min-height: 0; }
+        .card {
+            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(56, 189, 248, 0.1); padding: 20px;
+            display: flex; flex-direction: column; position: relative; backdrop-filter: blur(10px);
+        }
+        .card::before, .card::after { content: ""; position: absolute; width: 14px; height: 14px; border: 2px solid #00f0ff; transition: all 0.3s; }
+        .card::before { top: -1px; left: -1px; border-bottom: 0; border-right: 0; }
+        .card::after { bottom: -1px; right: -1px; border-top: 0; border-left: 0; }
+        .card:hover { border-color: rgba(0, 240, 255, 0.4); box-shadow: 0 4px 25px rgba(0, 240, 255, 0.15), inset 0 0 25px rgba(56, 189, 248, 0.15); }
+        
+        .top-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .data-card { justify-content: center; padding: 20px 30px; }
+        .data-card .card-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .data-card .label { font-size: 18px; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 10px; }
+        .data-card .icon-wrapper { width: 36px; height: 36px; background: rgba(56, 189, 248, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .data-card .value-box { display: flex; align-items: baseline; margin-top: 5px; }
+        .data-card .value { font-size: 46px; font-weight: 800; font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 1px; }
+        .data-card .unit { font-size: 16px; color: #64748b; margin-left: 8px; font-weight: bold; }
+        .total-card .value { color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
+        .total-card .icon-wrapper { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+        .domestic-card .value { color: #06b6d4; text-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }
+        .domestic-card .icon-wrapper { background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.3); }
+        .overseas-card .value { color: #10b981; text-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        .overseas-card .icon-wrapper { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+        
+        .target-box { margin-top: 12px; font-size: 14px; color: #cbd5e1; display: flex; justify-content: space-between; font-weight: 500; }
+        .progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+        .progress-bar { height: 100%; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 240, 255, 0.6); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .domestic-bar { background: linear-gradient(90deg, #0072ff, #00f0ff); }
+        .overseas-bar { background: linear-gradient(90deg, #059669, #10b981); }
+        
+        .mid-row, .bot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-title { font-size: 20px; font-weight: 700; color: #ffffff; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+        .chart-title::before { content: ''; display: inline-block; width: 5px; height: 20px; background: #00f0ff; margin-right: 10px; vertical-align: middle; box-shadow: 0 0 8px #00f0ff; }
+        .chart-title .title-text { flex: 1; }
+        .chart-title span.sub-en { font-size: 13px; color: #00f0ff; font-family: 'Arial'; font-weight: 600; border: 1px solid rgba(0,240,255,0.3); padding: 2px 6px; border-radius: 3px; background: rgba(0,240,255,0.05); }
+        .chart-inner { flex: 1; width: 100%; height: 100%; }
     </style>
 </head>
+<body>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <!-- 密码验证区域 -->
-    <div id="login-section" class="w-full max-w-md">
-        <div class="bg-white rounded-xl shadow-xl overflow-hidden">
-            <div class="bg-primary p-6 text-white text-center">
-                <i class="fa fa-bar-chart text-4xl mb-3"></i>
-                <h1 class="text-2xl font-bold">Power BI 报表访问</h1>
-                <p class="opacity-90 mt-1">请输入密码以访问报表</p>
-            </div>
-            <div class="p-6">
-                <div class="mb-4">
-                    <label for="password" class="block text-gray-700 mb-2">密码</label>
-                    <div class="relative">
-                        <input type="password" id="password"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
-                            placeholder="请输入访问密码">
-                        <button id="toggle-password"
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
-                            <i class="fa fa-eye-slash"></i>
-                        </button>
-                    </div>
-                </div>
-                <button id="login-btn"
-                    class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center">
-                    <i class="fa fa-unlock-alt mr-2"></i> 访问报表
-                </button>
-                <p id="error-message" class="text-red-500 text-center mt-3 hidden">密码错误，请重试</p>
-            </div>
+    <div id="authOverlay">
+        <div class="login-box">
+            <div class="login-title">🔒 玉汝成数据监控安全认证</div>
+            <input type="password" id="passInput" class="password-input" placeholder="请输入 6 位访问密码" maxlength="12">
+            <button class="login-btn" onclick="verifyPassword()">安全登录</button>
+            <div class="error-msg" id="errorTip">❌ 密码错误，请重新输入！</div>
         </div>
     </div>
 
-    <!-- Power BI 报表区域 (初始隐藏) -->
-    <div id="report-section" class="w-full max-w-6xl hidden">
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="bg-primary p-4 text-white flex flex-wrap items-center justify-between gap-3">
-                <!-- 左上角标题 -->
-                <div>
-                    <h1 class="text-xl font-bold flex items-center">
-                        <i class="fa fa-bar-chart mr-2"></i>玉汝成 Power BI智能看板
-                    </h1>
+    <div id="mainDashboard">
+        <div class="header">
+            <div class="filter-container">
+                <span class="filter-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2.5"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+                    数据筛选:
+                </span>
+                <select class="month-select" id="monthSelector" onchange="onMonthChange(this.value)">
+                    <option value="all">选择月份 (1-6月)</option>
+                    <option value="1">1月</option>
+                    <option value="2">2月</option>
+                    <option value="3">3月</option>
+                    <option value="4">4月</option>
+                    <option value="5">5月</option>
+                    <option value="6">6月</option>
+                </select>
+            </div>
+            <div class="title">玉汝成出库数据智能看板</div>
+            <div class="time" id="liveTime">加载中...</div>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="top-row">
+                <div class="card data-card total-card">
+                    <div class="card-header-box">
+                        <div class="label">总金额</div>
+                        <div class="icon-wrapper">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 4l6 6 6-4M12 10v11M8 13h8M8 17h8"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="value-box">
+                        <div class="value" id="totalValue">0</div>
+                        <div class="unit">元</div>
+                    </div>
+                    <div class="target-box" style="visibility: hidden;"></div>
                 </div>
-                
-                <!-- 右侧刷新控制和状态区域 -->
-                <div class="flex items-center gap-4 flex-wrap">
-                    <div class="flex items-center text-sm">
-                        <span class="mr-2">下次刷新:</span>
-                        <span id="next-refresh-countdown" class="font-medium text-white/90">10秒</span>
+                <div class="card data-card domestic-card">
+                    <div class="card-header-box">
+                        <div class="label">国内团队</div>
+                        <div class="icon-wrapper">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        </div>
                     </div>
-                    <div class="flex items-center text-sm">
-                        <span id="last-refresh-status" class="mr-2">最后刷新:</span>
-                        <span id="last-refresh-time" class="font-medium">加载中...</span>
+                    <div class="value-box">
+                        <div class="value" id="domesticValue">0</div>
+                        <div class="unit">元</div>
                     </div>
-                    
-                    <button id="manual-refresh-btn" 
-                        class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded transition text-sm flex items-center">
-                        <i class="fa fa-refresh mr-1.5"></i> 手动刷新
-                    </button>
-                    
-                    <button id="logout-btn"
-                        class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded transition text-sm">
-                        <i class="fa fa-sign-out mr-1.5"></i> 退出
-                    </button>
+                    <div class="target-box">
+                        <span id="domesticTargetText">目标: 0 元</span>
+                        <span id="domesticProgressText">进度: 0%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar domestic-bar" id="domesticBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="card data-card overseas-card">
+                    <div class="card-header-box">
+                        <div class="label">海外团队</div>
+                        <div class="icon-wrapper">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="value-box">
+                        <div class="value" id="overseasValue">0</div>
+                        <div class="unit">元</div>
+                    </div>
+                    <div class="target-box">
+                        <span id="overseasTargetText">目标: 0 元</span>
+                        <span id="overseasProgressText">进度: 0%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar overseas-bar" id="overseasBar" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="p-4">
-                <!-- 刷新状态指示器 -->
-                <div id="refresh-indicator" class="mb-2 text-sm text-warning hidden">
-                    <i class="fa fa-refresh fa-spin mr-1.5"></i> 正在刷新页面...
+
+            <div class="mid-row">
+                <div class="card">
+                    <div class="chart-title"><div class="title-text">今日/本周出库</div><span class="sub-en">COMPARE</span></div>
+                    <div id="todayChart" class="chart-inner"></div>
                 </div>
-                
-                <!-- Power BI嵌入容器 -->
-                <div id="powerbi-container">
-                    <iframe id="powerbi-iframe" width="100%" height="700"
-                        src="https://app.powerbi.com/view?r=eyJrIjoiMzI4YmRkMDYtMDNkMS00NjNmLTljZDItYjk4NmIwZTdlMzU5IiwidCI6IjY1MmU4MmZlLWRjM2QtNDQxYy04ZjRiLWIzM2NmNzg2YjEzYyJ9"
-                        frameborder="0" allowFullScreen="true"></iframe>
+                <div class="card">
+                    <div class="chart-title"><div class="title-text">本周出库趋势</div><span class="sub-en">TREND</span></div>
+                    <div id="weekChart" class="chart-inner"></div>
+                </div>
+            </div>
+
+            <div class="bot-row">
+                <div class="card">
+                    <div class="chart-title"><div class="title-text">物料类别占比</div><span class="sub-en">PROPORTION</span></div>
+                    <div id="pieChart" class="chart-inner"></div>
+                </div>
+                <div class="card">
+                    <div class="chart-title"><div class="title-text">月度出库趋势</div><span class="sub-en">MONTHLY</span></div>
+                    <div id="monthChart" class="chart-inner"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 配置
-        const ACCESS_PASSWORD = "202511";
-        const AUTH_STORAGE_KEY = "powerbi_auth_status"; // 用于本地存储登录状态的键名
-        const REFRESH_INTERVAL = 3600; // 自动刷新间隔（秒）
-        
-        // 全局变量
-        let refreshTimer = null;
-        let countdown = REFRESH_INTERVAL;
-        
-        // DOM 元素
-        const loginSection = document.getElementById('login-section');
-        const reportSection = document.getElementById('report-section');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const errorMessage = document.getElementById('error-message');
-        const togglePassword = document.getElementById('toggle-password');
-        const refreshIndicator = document.getElementById('refresh-indicator');
-        const lastRefreshTime = document.getElementById('last-refresh-time');
-        const nextRefreshCountdown = document.getElementById('next-refresh-countdown');
-        const manualRefreshBtn = document.getElementById('manual-refresh-btn');
+        /* ====================================================================
+           🔒 【安全隐私与定时无感强刷机制】
+           ==================================================================== */
+        const TARGET_PASSWORD = "202606"; 
+        const REFRESH_INTERVAL = 8 * 60 * 60 * 1000; // 8小时强刷
 
-        // 页面加载时检查登录状态
-        document.addEventListener('DOMContentLoaded', () => {
-            checkLoginStatus();
+        document.getElementById('passInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') verifyPassword();
         });
 
-        // 检查登录状态 - 从本地存储获取
-        function checkLoginStatus() {
-            const isAuthenticated = localStorage.getItem(AUTH_STORAGE_KEY) === 'true';
-            if (isAuthenticated) {
-                // 已登录，显示报表区域并启动自动刷新
-                loginSection.classList.add('hidden');
-                reportSection.classList.remove('hidden');
-                updateLastRefreshTime();
-                startAutoRefresh();
+        function verifyPassword() {
+            const inputVal = document.getElementById('passInput').value;
+            if (inputVal === TARGET_PASSWORD) {
+                localStorage.setItem('yurucheng_auth_token', 'authenticated_passed');
+                unlockDashboard();
             } else {
-                // 未登录，显示登录区域并停止自动刷新
-                loginSection.classList.remove('hidden');
-                reportSection.classList.add('hidden');
-                stopAutoRefresh();
+                document.getElementById('errorTip').style.display = 'block';
+                document.getElementById('passInput').value = '';
             }
         }
 
-        // 切换密码可见性
-        togglePassword.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            togglePassword.innerHTML = type === 'password' ?
-                '<i class="fa fa-eye-slash"></i>' :
-                '<i class="fa fa-eye"></i>';
+        function unlockDashboard() {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('mainDashboard').style.display = 'flex';
+            initAllCharts();
+        }
+
+        window.onload = function() {
+            const token = localStorage.getItem('yurucheng_auth_token');
+            if (token === 'authenticated_passed') {
+                unlockDashboard();
+            }
+            setTimeout(() => { window.location.reload(); }, REFRESH_INTERVAL);
+        };
+
+        /* ====================================================================
+           ⚙️ 【全局数据中央控制仓】 - 每次修改数据只需要修改这个 CONFIG_DATA 对象！
+           ==================================================================== */
+        const CONFIG_DATA = {
+            // 1. 月度基础及对账数据集 (单位：元)
+            months: {
+                '1': { total: 16041547, domestic: 1198645, domesticTarget: 1240000, overseas: 13802217, overseasTarget: 13560000 },
+                '2': { total: 11758106, domestic: 933642,  domesticTarget: 820000,  overseas: 9354472,  overseasTarget: 12750000 },
+                '3': { total: 23686004, domestic: 1061451, domesticTarget: 1150000, overseas: 21800595, overseasTarget: 16860000 },
+                '4': { total: 30049287, domestic: 1277545, domesticTarget: 1290000, overseas: 26785633, overseasTarget: 18000000 },
+                '5': { total: 14715009, domestic: 1248567, domesticTarget: 1489000, overseas: 10438323, overseasTarget: 17570000 },
+                '6': { total: 2108550,   domestic: 133621,   domesticTarget: 1450000, overseas: 2034124,   overseasTarget: 17980000 }
+            },
+
+            // 2. 今日出库数据面板 (单位：万元)
+            today: { domestic: 3, overseas: 14 },
+
+            // 3. 本周出库追踪 (单位：万元) —— 左边双柱形图会自动对这里的 domestic 和 overseas 求和！
+            weekly: {
+                days: ['周一', '周二', '周三'],
+                domestic: [2, 3, 7],
+                overseas: [51, 14, 138]
+            },
+
+            // 4. 物料类别销售占比 (单位：万元)
+            materials: [
+                { value: 75, name: '氧化锆', itemStyle: { color: '#00f0ff' } },
+                { value: 52,  name: '雕铣机', itemStyle: { color: '#3b82f6' } },
+                { value: 21,  name: '玻璃陶瓷', itemStyle: { color: '#10b981' } },
+                { value: 9,  name: '耗材', itemStyle: { color: '#f59e0b' } },
+                { value: 28,  name: '影像设备', itemStyle: { color: '#ec4899' } }
+            ]
+        };
+
+        /* ====================================================================
+           🏗️ 【核心自动化数据重筑计算链】
+           ==================================================================== */
+        // A. 自动计算本周总计（用于今日/本周双柱形图）
+        const weeklyDomSum = CONFIG_DATA.weekly.domestic.reduce((a, b) => a + b, 0);
+        const weeklyOvSum = CONFIG_DATA.weekly.overseas.reduce((a, b) => a + b, 0);
+
+        // B. 全自动汇聚计算“累计全部月份”
+        const dashboardData = { ...CONFIG_DATA.months };
+        let allTotal = 0, allDom = 0, allDomTar = 0, allOv = 0, allOvTar = 0;
+        Object.keys(CONFIG_DATA.months).forEach(m => {
+            allTotal += CONFIG_DATA.months[m].total; allDom += CONFIG_DATA.months[m].domestic;
+            allDomTar += CONFIG_DATA.months[m].domesticTarget; allOv += CONFIG_DATA.months[m].overseas;
+            allOvTar += CONFIG_DATA.months[m].overseasTarget;
         });
+        dashboardData['all'] = { total: allTotal, domestic: allDom, domesticTarget: allDomTar, overseas: allOv, overseasTarget: allOvTar };
 
-        // 登录验证
-        loginBtn.addEventListener('click', () => {
-            const password = passwordInput.value.trim();
-
-            if (password === ACCESS_PASSWORD) {
-                // 密码正确，保存登录状态到本地存储
-                localStorage.setItem(AUTH_STORAGE_KEY, 'true');
-                checkLoginStatus();
-                errorMessage.classList.add('hidden');
-                passwordInput.value = '';
-            } else {
-                // 密码错误
-                errorMessage.classList.remove('hidden');
-                passwordInput.classList.add('border-red-500');
-
-                // 1秒后移除红色边框效果
-                setTimeout(() => {
-                    passwordInput.classList.remove('border-red-500');
-                }, 1000);
+        // C. 月度计算链与环比增长率全自动重算
+        const monthKeys = Object.keys(CONFIG_DATA.months).sort((a, b) => Number(a) - Number(b));
+        const trendAmountData = []; const trendRateData = [];
+        monthKeys.forEach((m, idx) => {
+            const currentTotal = CONFIG_DATA.months[m].total;
+            trendAmountData.push(Number((currentTotal / 10000).toFixed(1))); 
+            if (idx === 0) { trendRateData.push(0); } else {
+                const prevTotal = CONFIG_DATA.months[monthKeys[idx - 1]].total;
+                trendRateData.push(Number((((currentTotal - prevTotal) / prevTotal) * 100).toFixed(1)));
             }
         });
 
-        // 支持回车键登录
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loginBtn.click();
-            }
-        });
-
-        // 退出登录
-        logoutBtn.addEventListener('click', () => {
-            // 清除本地存储的登录状态
-            localStorage.removeItem(AUTH_STORAGE_KEY);
-            checkLoginStatus();
-        });
-
-        // 手动刷新按钮 - 刷新整个页面
-        manualRefreshBtn.addEventListener('click', () => {
-            performRefresh();
-        });
-
-        // 开始自动刷新计时器
-        function startAutoRefresh() {
-            // 清除现有计时器
-            if (refreshTimer) {
-                clearInterval(refreshTimer);
-            }
-            
-            // 重置倒计时
-            countdown = REFRESH_INTERVAL;
-            updateCountdownDisplay();
-            
-            // 设置新计时器
-            refreshTimer = setInterval(() => {
-                countdown--;
-                updateCountdownDisplay();
-                
-                // 倒计时结束，执行刷新
-                if (countdown <= 0) {
-                    performRefresh();
-                }
-            }, 1000);
-        }
-
-        // 停止自动刷新计时器
-        function stopAutoRefresh() {
-            if (refreshTimer) {
-                clearInterval(refreshTimer);
-                refreshTimer = null;
-            }
-        }
-
-        // 执行刷新操作
-        function performRefresh() {
-            // 显示刷新指示器
-            refreshIndicator.classList.remove('hidden');
-            
-            // 停止计时器
-            stopAutoRefresh();
-            
-            // 稍等片刻再刷新，让用户看到刷新提示
-            setTimeout(() => {
-                // 刷新前更新最后刷新时间
-                updateLastRefreshTime();
-                // 刷新页面
-                window.location.reload();
-            }, 500);
-        }
-
-        // 更新倒计时显示
-        function updateCountdownDisplay() {
-            nextRefreshCountdown.textContent = `${countdown}秒`;
-        }
-
-        // 更新最后刷新时间显示
-        function updateLastRefreshTime() {
+        // 时钟程序
+        function updateTime() {
             const now = new Date();
-            // 格式化时间为 年-月-日 时:分:秒
-            const timeString = now.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
+            document.getElementById('liveTime').innerText = `📅 ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+        }
+        function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+
+        // 联动切换控制
+        function onMonthChange(month) {
+            const data = dashboardData[month];
+            const domProgress = ((data.domestic / data.domesticTarget) * 100).toFixed(1);
+            const ovProgress = ((data.overseas / data.overseasTarget) * 100).toFixed(1);
+
+            document.getElementById('totalValue').innerText = formatNumber(data.total);
+            document.getElementById('domesticValue').innerText = formatNumber(data.domestic);
+            document.getElementById('domesticTargetText').innerText = `目标: ${formatNumber(data.domesticTarget)} 元`;
+            document.getElementById('domesticProgressText').innerText = `进度: ${domProgress}%`;
+            document.getElementById('domesticBar').style.width = `${domProgress}%`;
+
+            document.getElementById('overseasValue').innerText = formatNumber(data.overseas);
+            document.getElementById('overseasTargetText').innerText = `目标: ${formatNumber(data.overseasTarget)} 元`;
+            document.getElementById('overseasProgressText').innerText = `进度: ${ovProgress}%`;
+            document.getElementById('overseasBar').style.width = `${ovProgress}%`;
+        }
+
+        // --- 四大图表渲染核心引擎 ---
+        function initAllCharts() {
+            setInterval(updateTime, 1000); updateTime();
             
-            lastRefreshTime.textContent = timeString;
+            const todayChart = echarts.init(document.getElementById('todayChart'));
+            const weekChart = echarts.init(document.getElementById('weekChart'));
+            const pieChart = echarts.init(document.getElementById('pieChart'));
+            const monthChart = echarts.init(document.getElementById('monthChart'));
+
+            const chartTextStyle = { color: '#94a3b8', fontSize: 14, fontWeight: 500 };
+            const splitLineStyle = { lineStyle: { color: 'rgba(255, 255, 255, 0.06)' } };
+
+            // 1. 今日/本周出库 (升级为双向指标双柱形图)
+            todayChart.setOption({
+                tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#00f0ff', textStyle: { color: '#fff' } },
+                legend: { data: ['今日出库', '本周出库'], textStyle: chartTextStyle, top: '0%' },
+                grid: { top: '22%', left: '10%', right: '10%', bottom: '15%', containLabel: true },
+                xAxis: {
+                    type: 'category', data: ['国内团队', '海外团队'],
+                    axisLabel: { color: '#cbd5e1', fontSize: 15, fontWeight: 'bold' },
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } }
+                },
+                yAxis: { type: 'value', name: '万元', nameTextStyle: chartTextStyle, axisLabel: chartTextStyle, splitLine: splitLineStyle },
+                series: [
+                    {
+                        name: '今日出库', type: 'bar', barWidth: '25%',
+                        tooltip: { valueFormatter: v => v + ' 万元' },
+                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#00f0ff' }, { offset: 1, color: '#0072ff' }]), borderRadius: [4, 4, 0, 0] },
+                        data: [CONFIG_DATA.today.domestic, CONFIG_DATA.today.overseas],
+                        label: { show: true, position: 'top', color: '#ffffff', fontSize: 14, fontWeight: 'bold', formatter: '{c} 万元' }
+                    },
+                    {
+                        name: '本周出库', type: 'bar', barWidth: '25%',
+                        tooltip: { valueFormatter: v => v + ' 万元' },
+                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#10b981' }, { offset: 1, color: '#059669' }]), borderRadius: [4, 4, 0, 0] },
+                        data: [weeklyDomSum, weeklyOvSum], // 自动求和填充
+                        label: { show: true, position: 'top', color: '#ffffff', fontSize: 14, fontWeight: 'bold', formatter: '{c} 万元' }
+                    }
+                ]
+            });
+
+            // 2. 本周出库趋势
+            weekChart.setOption({
+                tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#3b82f6', textStyle: { color: '#fff' } },
+                legend: { data: ['国内', '海外'], textStyle: chartTextStyle, top: '0%' },
+                grid: { top: '22%', left: '8%', right: '8%', bottom: '12%', containLabel: true },
+                xAxis: { type: 'category', boundaryGap: false, data: CONFIG_DATA.weekly.days, axisLabel: { color: '#cbd5e1', fontSize: 14, fontWeight: 'bold' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } } },
+                yAxis: { type: 'value', name: '万元', nameTextStyle: chartTextStyle, axisLabel: chartTextStyle, splitLine: splitLineStyle },
+                series: [
+                    { name: '国内', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, tooltip: { valueFormatter: v => v + ' 万元' }, lineStyle: { color: '#3b82f6', width: 4 }, itemStyle: { color: '#00f0ff' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59, 130, 246, 0.35)' }, { offset: 1, color: 'rgba(59, 130, 246, 0)' }]) }, data: CONFIG_DATA.weekly.domestic },
+                    { name: '海外', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, tooltip: { valueFormatter: v => v + ' 万元' }, lineStyle: { color: '#10b981', width: 4 }, itemStyle: { color: '#10b981' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(16, 185, 129, 0.35)' }, { offset: 1, color: 'rgba(16, 185, 129, 0)' }]) }, data: CONFIG_DATA.weekly.overseas }
+                ]
+            });
+
+            // 3. 物料类别占比
+            pieChart.setOption({
+                tooltip: { trigger: 'item', formatter: '{b} : {c}万元 ({d}%)', backgroundColor: 'rgba(15, 23, 42, 0.9)', textStyle: { color: '#fff' } },
+                legend: { show: false }, 
+                series: [{ name: '物料占比', type: 'pie', radius: ['40%', '75%'], center: ['50%', '50%'], roseType: 'radius', itemStyle: { borderRadius: 6, borderColor: '#020617', borderWidth: 2 }, label: { show: true, color: '#cbd5e1', fontSize: 14, fontWeight: 'bold', formatter: '{b}\n{d}%' }, labelLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.3)', width: 1.5 }, smooth: 0.2, length: 12, length2: 18 }, data: CONFIG_DATA.materials }]
+            });
+
+            // 4. 月度出库趋势
+            monthChart.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+                legend: { data: ['出库金额', '环比增长率'], textStyle: chartTextStyle, top: '0%' },
+                grid: { top: '22%', left: '8%', right: '8%', bottom: '12%', containLabel: true },
+                xAxis: { type: 'category', data: monthKeys.map(m => m + '月'), axisLabel: { color: '#cbd5e1', fontSize: 14, fontWeight: 'bold' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } } },
+                yAxis: [
+                    { type: 'value', name: '万元', nameTextStyle: chartTextStyle, axisLabel: chartTextStyle, splitLine: splitLineStyle },
+                    { type: 'value', name: '增长率', nameTextStyle: chartTextStyle, axisLabel: { formatter: '{value} %', color: '#cbd5e1', fontSize: 13 }, splitLine: { show: false } }
+                ],
+                series: [
+                    { name: '出库金额', type: 'bar', barWidth: '35%', tooltip: { valueFormatter: v => v + ' 万元' }, itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#a855f7' }, { offset: 1, color: '#3b82f6' }]), borderRadius: [4, 4, 0, 0] }, data: trendAmountData },
+                    { name: '环比增长率', type: 'line', yAxisIndex: 1, smooth: true, symbol: 'diamond', symbolSize: 8, tooltip: { valueFormatter: v => v + ' %' }, lineStyle: { color: '#f97316', width: 3 }, itemStyle: { color: '#f97316' }, data: trendRateData }
+                ]
+            });
+
+            // 轮播组件驱动
+            function enableCarousel(instance, count) {
+                let idx = -1;
+                setInterval(() => {
+                    instance.dispatchAction({ type: 'downplay', seriesIndex: 0, dataIndex: idx });
+                    idx = (idx + 1) % count;
+                    instance.dispatchAction({ type: 'highlight', seriesIndex: 0, dataIndex: idx });
+                    instance.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: idx });
+                }, 3000);
+            }
+            enableCarousel(todayChart, 2); enableCarousel(weekChart, CONFIG_DATA.weekly.days.length); enableCarousel(pieChart, CONFIG_DATA.materials.length); enableCarousel(monthChart, monthKeys.length);
+
+            // 🎯 【默认加载最新月份数据】
+            const latestMonth = monthKeys[monthKeys.length - 1]; 
+            document.getElementById('monthSelector').value = latestMonth;
+            onMonthChange(latestMonth);
+
+            window.addEventListener('resize', () => { todayChart.resize(); weekChart.resize(); pieChart.resize(); monthChart.resize(); });
         }
     </script>
 </body>
-
 </html>
-    
