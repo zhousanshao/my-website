@@ -348,26 +348,26 @@
                 '3': { total: 23686004, domestic: 1061451, domesticTarget: 1150000, overseas: 21800595, overseasTarget: 16860000 },
                 '4': { total: 30049287, domestic: 1277545, domesticTarget: 1290000, overseas: 26785633, overseasTarget: 18000000 },
                 '5': { total: 14715009, domestic: 1248567, domesticTarget: 1489000, overseas: 10438323, overseasTarget: 17570000 },
-                '6': { total: 12703665,   domestic: 861998,   domesticTarget: 1450000, overseas: 11063382,   overseasTarget: 17980000 }
+                '6': { total: 13470644,   domestic: 878838,   domesticTarget: 1450000, overseas: 11492684,   overseasTarget: 17980000 }
             },
 
             // 2. 今日出库数据面板 (单位：万元)
-            today: { domestic: 1, overseas: 40 },
+            today: { domestic: 0, overseas: 0 },
 
             // 3. 本周出库追踪 (单位：万元) —— 左边双柱形图会自动对这里的 domestic 和 overseas 求和！
             weekly: {
-                days: [ '周一','周二','周三','周四' ],
-                domestic: [8,6,7,1],
-                overseas: [45,37,100,40]
+                days: [ '周一','周二','周三','周四' ,'周五','周六','周日' ],
+                domestic: [8,6,7,0.1,1,1,0.7],
+                overseas: [44,37,100,40,40,4,0]
             },
 
             // 4. 物料类别销售占比 (单位：万元)
             materials: [
-                { value: 459, name: '氧化锆', itemStyle: { color: '#00f0ff' } },
-                { value: 275,  name: '雕铣机', itemStyle: { color: '#3b82f6' } },
-                { value: 31,  name: '玻璃陶瓷', itemStyle: { color: '#10b981' } },
-                { value: 34,  name: '耗材', itemStyle: { color: '#f59e0b' } },
-                { value: 88,  name: '影像设备', itemStyle: { color: '#ec4899' } }
+                { value: 613, name: '氧化锆', itemStyle: { color: '#00f0ff' } },
+                { value: 337,  name: '雕铣机', itemStyle: { color: '#3b82f6' } },
+                { value: 36,  name: '玻璃陶瓷', itemStyle: { color: '#10b981' } },
+                { value: 54,  name: '耗材', itemStyle: { color: '#f59e0b' } },
+                { value: 109,  name: '影像设备', itemStyle: { color: '#ec4899' } }
             ]
         };
 
