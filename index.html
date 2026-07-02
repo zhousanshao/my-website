@@ -6,71 +6,55 @@
     <title>玉汝成出库数据智能看板</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
-        /* 基础样式复位与科技网格背景 */
+        /* 基础样式复位与现代办公高雅浅色背景 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            background-color: #020617;
-            background-image: 
-                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-                radial-gradient(circle at 50% 0%, rgba(16, 38, 119, 0.7) 0%, transparent 55%),
-                radial-gradient(circle at 90% 80%, rgba(10, 24, 75, 0.5) 0%, transparent 40%);
-            background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
-            color: #fff;
+            background-color: #f8fafc; /* 浅雅白灰色 */
+            color: #334155;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 0 10px 10px 10px;
+            padding: 10px; 
         }
 
-        /* 🔒 密码访问锁屏控制层样式 */
+        /* 🔒 密码访问锁屏控制层样式 (全面白底化) */
         #authOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #020617;
-            background-image: radial-gradient(circle at 50% 50%, rgba(16, 38, 119, 0.8) 0%, #020617 70%);
+            background-color: #f1f5f9;
             z-index: 9999;
             display: flex;
             justify-content: center;
             align-items: center;
         }
         .login-box {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(0, 240, 255, 0.4);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             padding: 40px;
             border-radius: 12px;
             width: 400px;
             text-align: center;
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), inset 0 0 20px rgba(0, 240, 255, 0.1);
-            backdrop-filter: blur(10px);
-            position: relative;
-        }
-        .login-box::before {
-            content: ""; position: absolute; top: -1px; left: -1px; width: 20px; height: 20px; border: 2px solid #00f0ff; border-bottom: 0; border-right: 0;
-        }
-        .login-box::after {
-            content: ""; position: absolute; bottom: -1px; right: -1px; width: 20px; height: 20px; border: 2px solid #00f0ff; border-top: 0; border-left: 0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
         }
         .login-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
-            color: #fff;
+            color: #0f172a;
             margin-bottom: 25px;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            letter-spacing: 1px;
         }
         .password-input {
             width: 100%;
-            background: rgba(2, 6, 23, 0.8);
-            border: 1px solid rgba(56, 189, 248, 0.5);
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
             padding: 12px 16px;
-            color: #00f0ff;
+            color: #0f172a;
             font-size: 16px;
             border-radius: 6px;
             outline: none;
@@ -80,12 +64,13 @@
             transition: all 0.3s;
         }
         .password-input:focus {
-            border-color: #00f0ff;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+            border-color: #3b82f6;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
         .login-btn {
             width: 100%;
-            background: linear-gradient(90deg, #0072ff, #00f0ff);
+            background: linear-gradient(90deg, #1d4ed8, #2563eb);
             border: none;
             padding: 12px;
             color: white;
@@ -94,12 +79,13 @@
             border-radius: 6px;
             cursor: pointer;
             letter-spacing: 2px;
-            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
             transition: all 0.3s;
         }
         .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6);
+            transform: translateY(-1px);
+            background: #1d4ed8;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
         }
         .error-msg {
             color: #ef4444;
@@ -111,81 +97,99 @@
 
         /* ⚙️ 看板主体结构样式 */
         #mainDashboard {
-            display: none; /* 默认隐藏，验证通过后显示 */
+            display: none; 
             flex-direction: column;
-            height: 100vh;
+            height: 100%; 
         }
         .header {
-            height: 80px;
+            height: 60px; 
             display: flex;
-            justify-between: space-between;
+            justify-content: space-between; 
             align-items: center;
-            padding: 0 20px;
+            padding: 0 10px;
             position: relative;
-            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0));
-        }
-        .header::before {
-            content: ''; position: absolute; bottom: 15px; left: 0; width: 100%; height: 1px;
-            background: linear-gradient(90deg, rgba(0,240,255,0) 0%, rgba(0,240,255,0.4) 30%, rgba(0,240,255,0.4) 70%, rgba(0,240,255,0) 100%);
-        }
-        .header::after {
-            content: ''; position: absolute; bottom: 12px; left: 30%; width: 40%; height: 3px;
-            background: linear-gradient(90deg, transparent, #00f0ff, #0072ff, transparent); box-shadow: 0 0 10px #00f0ff;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            margin-bottom: 10px;
         }
         .header .title {
-            font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: 6px; text-align: center;
-            background: linear-gradient(to bottom, #ffffff 40%, #00f0ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(0, 240, 255, 0.4); flex: 1; z-index: 2;
+            font-size: 24px; 
+            font-weight: 800; 
+            color: #0f172a; /* 总裁深灰蓝，极为稳重 */
+            letter-spacing: 4px; 
+            text-align: center;
+            flex: 1; 
+            z-index: 2;
         }
-        .filter-container { width: 320px; display: flex; align-items: center; gap: 12px; z-index: 2; }
-        .filter-label { font-size: 15px; color: #94a3b8; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .filter-container { width: 320px; display: flex; align-items: center; gap: 8px; z-index: 2; }
+        .filter-label { font-size: 14px; color: #475569; font-weight: 600; display: flex; align-items: center; gap: 6px; }
         .month-select {
-            background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(0, 240, 255, 0.5); color: #00f0ff;
-            padding: 8px 16px; font-size: 15px; font-weight: 600; border-radius: 4px; outline: none; cursor: pointer;
-            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2); transition: all 0.3s;
+            background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a;
+            padding: 5px 10px; font-size: 14px; font-weight: 600; border-radius: 4px; outline: none; cursor: pointer;
+            transition: all 0.2s;
         }
-        .month-select:hover, .month-select:focus { border-color: #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.5); }
-        .month-select option { background: #0f172a; color: #fff; }
-        .header .time { font-size: 18px; color: #38bdf8; font-family: 'Courier New', Courier, monospace; font-weight: bold; width: 320px; text-align: right; z-index: 2; letter-spacing: 1px; }
+        .month-select:hover { border-color: #94a3b8; }
+        .month-select:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+        .header .time { font-size: 15px; color: #64748b; font-family: 'Courier New', Courier, monospace; font-weight: bold; width: 320px; text-align: right; z-index: 2; letter-spacing: 1px; }
         
-        .dashboard-content { flex: 1; padding: 10px; display: grid; grid-template-rows: 1.1fr 2fr 2fr; gap: 20px; min-height: 0; }
+        .dashboard-content { 
+            flex: 1; 
+            padding: 5px 0 0 0; 
+            display: grid; 
+            grid-template-rows: auto 1fr 1fr; 
+            gap: 15px; 
+            min-height: 0; 
+        }
         .card {
-            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(56, 189, 248, 0.1); padding: 20px;
-            display: flex; flex-direction: column; position: relative; backdrop-filter: blur(10px);
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05); 
+            padding: 14px 18px; 
+            display: flex; flex-direction: column; position: relative;
+            min-height: 0; 
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .card::before, .card::after { content: ""; position: absolute; width: 14px; height: 14px; border: 2px solid #00f0ff; transition: all 0.3s; }
-        .card::before { top: -1px; left: -1px; border-bottom: 0; border-right: 0; }
-        .card::after { bottom: -1px; right: -1px; border-top: 0; border-left: 0; }
-        .card:hover { border-color: rgba(0, 240, 255, 0.4); box-shadow: 0 4px 25px rgba(0, 240, 255, 0.15), inset 0 0 25px rgba(56, 189, 248, 0.15); }
+        .card:hover { 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
         
-        .top-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .data-card { justify-content: center; padding: 20px 30px; }
-        .data-card .card-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .data-card .label { font-size: 18px; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 10px; }
-        .data-card .icon-wrapper { width: 36px; height: 36px; background: rgba(56, 189, 248, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(56, 189, 248, 0.3); }
-        .data-card .value-box { display: flex; align-items: baseline; margin-top: 5px; }
-        .data-card .value { font-size: 46px; font-weight: 800; font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 1px; }
-        .data-card .unit { font-size: 16px; color: #64748b; margin-left: 8px; font-weight: bold; }
-        .total-card .value { color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
-        .total-card .icon-wrapper { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
-        .domestic-card .value { color: #06b6d4; text-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }
-        .domestic-card .icon-wrapper { background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.3); }
-        .overseas-card .value { color: #10b981; text-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
-        .overseas-card .icon-wrapper { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+        .top-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .data-card { justify-content: center; padding: 14px 20px; }
+        .data-card .card-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+        .data-card .label { font-size: 14px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 8px; }
+        .data-card .icon-wrapper { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .data-card .value-box { display: flex; align-items: baseline; margin-top: 2px; }
+        .data-card .value { font-size: 34px; font-weight: 800; font-family: 'Arial Black', sans-serif; letter-spacing: -0.5px; } 
+        .data-card .unit { font-size: 13px; color: #94a3b8; margin-left: 6px; font-weight: bold; }
         
-        .target-box { margin-top: 12px; font-size: 14px; color: #cbd5e1; display: flex; justify-content: space-between; font-weight: 500; }
-        .progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; margin-top: 8px; overflow: hidden; }
-        .progress-bar { height: 100%; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 240, 255, 0.6); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        .domestic-bar { background: linear-gradient(90deg, #0072ff, #00f0ff); }
-        .overseas-bar { background: linear-gradient(90deg, #059669, #10b981); }
+        /* 数据大字轻量色彩 */
+        .total-card .value { color: #d97706; } /* 琥珀色 */
+        .total-card .icon-wrapper { background: #fef3c7; }
+        .domestic-card .value { color: #0284c7; } /* 商务蓝 */
+        .domestic-card .icon-wrapper { background: #e0f2fe; }
+        .overseas-card .value { color: #059669; } /* 优雅绿 */
+        .overseas-card .icon-wrapper { background: #d1fae5; }
         
-        .mid-row, .bot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .chart-title { font-size: 20px; font-weight: 700; color: #ffffff; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
-        .chart-title::before { content: ''; display: inline-block; width: 5px; height: 20px; background: #00f0ff; margin-right: 10px; vertical-align: middle; box-shadow: 0 0 8px #00f0ff; }
+        .target-box { margin-top: 6px; font-size: 12px; color: #64748b; display: flex; justify-content: space-between; font-weight: 600; }
+        .progress-container { width: 100%; height: 6px; background: #f1f5f9; border-radius: 4px; margin-top: 6px; overflow: hidden; }
+        .progress-bar { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .domestic-bar { background: linear-gradient(90deg, #3b82f6, #0284c7); }
+        .overseas-bar { background: linear-gradient(90deg, #10b981, #059669); }
+        
+        .mid-row, .bot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 0; }
+        .chart-title { font-size: 15px; font-weight: 700; color: #0f172a; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; margin-bottom: 10px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+        .chart-title::before { content: ''; display: inline-block; width: 4px; height: 14px; background: #2563eb; margin-right: 8px; vertical-align: middle; border-radius: 2px; }
         .chart-title .title-text { flex: 1; }
-        .chart-title span.sub-en { font-size: 13px; color: #00f0ff; font-family: 'Arial'; font-weight: 600; border: 1px solid rgba(0,240,255,0.3); padding: 2px 6px; border-radius: 3px; background: rgba(0,240,255,0.05); }
-        .chart-inner { flex: 1; width: 100%; height: 100%; }
+        .chart-title span.sub-en { font-size: 11px; color: #2563eb; font-family: 'Arial'; font-weight: 700; border: 1px solid #bfdbfe; padding: 1px 4px; border-radius: 3px; background: #eff6ff; }
+        
+        .chart-inner { 
+            flex: 1; 
+            width: 100%; 
+            height: 0; 
+            min-height: 0; 
+        }
     </style>
 </head>
 <body>
@@ -203,7 +207,7 @@
         <div class="header">
             <div class="filter-container">
                 <span class="filter-label">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2.5"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
                     数据筛选:
                 </span>
                 <select class="month-select" id="monthSelector" onchange="onMonthChange(this.value)">
@@ -226,7 +230,7 @@
                     <div class="card-header-box">
                         <div class="label">总金额</div>
                         <div class="icon-wrapper">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M6 4l6 6 6-4M12 10v11M8 13h8M8 17h8"/>
                             </svg>
                         </div>
@@ -235,13 +239,13 @@
                         <div class="value" id="totalValue">0</div>
                         <div class="unit">元</div>
                     </div>
-                    <div class="target-box" style="visibility: hidden;"></div>
+                    <div class="target-box" style="visibility: hidden; margin-top: 0; font-size: 0; height: 0;"></div>
                 </div>
                 <div class="card data-card domestic-card">
                     <div class="card-header-box">
                         <div class="label">国内团队</div>
                         <div class="icon-wrapper">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         </div>
                     </div>
                     <div class="value-box">
@@ -260,7 +264,7 @@
                     <div class="card-header-box">
                         <div class="label">海外团队</div>
                         <div class="icon-wrapper">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                         </div>
                     </div>
                     <div class="value-box">
@@ -303,10 +307,10 @@
 
     <script>
         /* ====================================================================
-           🔒 【安全隐私与定时无感强刷机制】
+            🔒 【安全隐私与定时无感强刷机制】
            ==================================================================== */
         const TARGET_PASSWORD = "202606"; 
-        const REFRESH_INTERVAL = 8 * 60 * 60 * 1000; // 8小时强刷
+        const REFRESH_INTERVAL = 8 * 60 * 60 * 1000; 
 
         document.getElementById('passInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') verifyPassword();
@@ -326,7 +330,9 @@
         function unlockDashboard() {
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('mainDashboard').style.display = 'flex';
-            initAllCharts();
+            setTimeout(() => {
+                initAllCharts();
+            }, 50);
         }
 
         window.onload = function() {
@@ -338,10 +344,9 @@
         };
 
         /* ====================================================================
-           ⚙️ 【全局数据中央控制仓】 - 每次修改数据只需要修改这个 CONFIG_DATA 对象！
+            ⚙️ 【全局数据中央控制仓】
            ==================================================================== */
         const CONFIG_DATA = {
-            // 1. 月度基础及对账数据集 (单位：元)
             months: {
                 '1': { total: 16041547, domestic: 1198645, domesticTarget: 1240000, overseas: 13802217, overseasTarget: 13560000 },
                 '2': { total: 11758106, domestic: 933642,  domesticTarget: 820000,  overseas: 9354472,  overseasTarget: 12750000 },
@@ -350,35 +355,27 @@
                 '5': { total: 14715009, domestic: 1248567, domesticTarget: 1489000, overseas: 10438323, overseasTarget: 17570000 },
                 '6': { total: 24365397,   domestic: 1383695,   domesticTarget: 1450000, overseas: 19066128,   overseasTarget: 17980000 }
             },
-
-            // 2. 今日出库数据面板 (单位：万元)
             today: { domestic: 10, overseas: 610 },
-
-            // 3. 本周出库追踪 (单位：万元) —— 左边双柱形图会自动对这里的 domestic 和 overseas 求和！
             weekly: {
                 days: [ '周六','周日','周一','周二'],
                 domestic: [1,0,39,10],
                 overseas: [4,0,147,610]
             },
-
-            // 4. 物料类别销售占比 (单位：万元)
             materials: [
-                { value: 613, name: '氧化锆', itemStyle: { color: '#00f0ff' } },
-                { value: 337,  name: '雕铣机', itemStyle: { color: '#3b82f6' } },
-                { value: 36,  name: '玻璃陶瓷', itemStyle: { color: '#10b981' } },
-                { value: 54,  name: '耗材', itemStyle: { color: '#f59e0b' } },
-                { value: 109,  name: '影像设备', itemStyle: { color: '#ec4899' } }
+                { value: 618, name: '氧化锆', itemStyle: { color: '#3b82f6' } }, // 调整为更柔和清晰的商务色
+                { value: 337,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
+                { value: 36,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
+                { value: 54,  name: '耗材', itemStyle: { color: '#fbbf24' } },
+                { value: 110,  name: '影像设备', itemStyle: { color: '#f472b6' } }
             ]
         };
 
         /* ====================================================================
-           🏗️ 【核心自动化数据重筑计算链】
+            🏗️ 【核心自动化数据重筑计算链】
            ==================================================================== */
-        // A. 自动计算本周总计（用于今日/本周双柱形图）
         const weeklyDomSum = CONFIG_DATA.weekly.domestic.reduce((a, b) => a + b, 0);
         const weeklyOvSum = CONFIG_DATA.weekly.overseas.reduce((a, b) => a + b, 0);
 
-        // B. 全自动汇聚计算“累计全部月份”
         const dashboardData = { ...CONFIG_DATA.months };
         let allTotal = 0, allDom = 0, allDomTar = 0, allOv = 0, allOvTar = 0;
         Object.keys(CONFIG_DATA.months).forEach(m => {
@@ -388,7 +385,6 @@
         });
         dashboardData['all'] = { total: allTotal, domestic: allDom, domesticTarget: allDomTar, overseas: allOv, overseasTarget: allOvTar };
 
-        // C. 月度计算链与环比增长率全自动重算
         const monthKeys = Object.keys(CONFIG_DATA.months).sort((a, b) => Number(a) - Number(b));
         const trendAmountData = []; const trendRateData = [];
         monthKeys.forEach((m, idx) => {
@@ -400,14 +396,12 @@
             }
         });
 
-        // 时钟程序
         function updateTime() {
             const now = new Date();
             document.getElementById('liveTime').innerText = `📅 ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
         }
         function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 
-        // 联动切换控制
         function onMonthChange(month) {
             const data = dashboardData[month];
             const domProgress = ((data.domestic / data.domesticTarget) * 100).toFixed(1);
@@ -425,7 +419,7 @@
             document.getElementById('overseasBar').style.width = `${ovProgress}%`;
         }
 
-        // --- 四大图表渲染核心引擎 ---
+        /* --- 四大图表渲染核心引擎 (全面深度白底化适配) --- */
         function initAllCharts() {
             setInterval(updateTime, 1000); updateTime();
             
@@ -434,71 +428,87 @@
             const pieChart = echarts.init(document.getElementById('pieChart'));
             const monthChart = echarts.init(document.getElementById('monthChart'));
 
-            const chartTextStyle = { color: '#94a3b8', fontSize: 14, fontWeight: 500 };
-            const splitLineStyle = { lineStyle: { color: 'rgba(255, 255, 255, 0.06)' } };
+            // 升级：浅色基调文本与轻灰网格
+            const chartTextStyle = { color: '#64748b', fontSize: 12, fontWeight: 500 };
+            const splitLineStyle = { lineStyle: { color: '#f1f5f9' } }; 
+            const axisLineStyle = { lineStyle: { color: '#cbd5e1' } };
+            const lightTooltip = { 
+                trigger: 'axis', 
+                backgroundColor: 'rgba(255, 255, 255, 0.98)', 
+                borderColor: '#e2e8f0', 
+                borderWidth: 1,
+                textStyle: { color: '#334155' },
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+            };
 
-            // 1. 今日/本周出库 (升级为双向指标双柱形图)
+            // 1. 今日/本周出库
             todayChart.setOption({
-                tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#00f0ff', textStyle: { color: '#fff' } },
+                tooltip: lightTooltip,
                 legend: { data: ['今日出库', '本周出库'], textStyle: chartTextStyle, top: '0%' },
-                grid: { top: '22%', left: '10%', right: '10%', bottom: '15%', containLabel: true },
+                grid: { top: '25%', left: '5%', right: '5%', bottom: '10%', containLabel: true },
                 xAxis: {
                     type: 'category', data: ['国内团队', '海外团队'],
-                    axisLabel: { color: '#cbd5e1', fontSize: 15, fontWeight: 'bold' },
-                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } }
+                    axisLabel: { color: '#334155', fontSize: 12, fontWeight: 'bold' },
+                    axisLine: axisLineStyle
                 },
                 yAxis: { type: 'value', name: '万元', nameTextStyle: chartTextStyle, axisLabel: chartTextStyle, splitLine: splitLineStyle },
                 series: [
                     {
-                        name: '今日出库', type: 'bar', barWidth: '25%',
+                        name: '今日出库', type: 'bar', barWidth: '22%',
                         tooltip: { valueFormatter: v => v + ' 万元' },
-                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#00f0ff' }, { offset: 1, color: '#0072ff' }]), borderRadius: [4, 4, 0, 0] },
+                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#60a5fa' }, { offset: 1, color: '#2563eb' }]), borderRadius: [4, 4, 0, 0] },
                         data: [CONFIG_DATA.today.domestic, CONFIG_DATA.today.overseas],
-                        label: { show: true, position: 'top', color: '#ffffff', fontSize: 14, fontWeight: 'bold', formatter: '{c} 万元' }
+                        label: { show: true, position: 'top', color: '#475569', fontSize: 11, fontWeight: 'bold', formatter: '{c} 万' } // 修复：标签在白底上改为深灰色
                     },
                     {
-                        name: '本周出库', type: 'bar', barWidth: '25%',
+                        name: '本周出库', type: 'bar', barWidth: '22%',
                         tooltip: { valueFormatter: v => v + ' 万元' },
-                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#10b981' }, { offset: 1, color: '#059669' }]), borderRadius: [4, 4, 0, 0] },
-                        data: [weeklyDomSum, weeklyOvSum], // 自动求和填充
-                        label: { show: true, position: 'top', color: '#ffffff', fontSize: 14, fontWeight: 'bold', formatter: '{c} 万元' }
+                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#34d399' }, { offset: 1, color: '#059669' }]), borderRadius: [4, 4, 0, 0] },
+                        data: [weeklyDomSum, weeklyOvSum], 
+                        label: { show: true, position: 'top', color: '#475569', fontSize: 11, fontWeight: 'bold', formatter: '{c} 万' }
                     }
                 ]
             });
 
             // 2. 本周出库趋势
             weekChart.setOption({
-                tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#3b82f6', textStyle: { color: '#fff' } },
+                tooltip: lightTooltip,
                 legend: { data: ['国内', '海外'], textStyle: chartTextStyle, top: '0%' },
-                grid: { top: '22%', left: '8%', right: '8%', bottom: '12%', containLabel: true },
-                xAxis: { type: 'category', boundaryGap: false, data: CONFIG_DATA.weekly.days, axisLabel: { color: '#cbd5e1', fontSize: 14, fontWeight: 'bold' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } } },
+                grid: { top: '25%', left: '5%', right: '5%', bottom: '10%', containLabel: true },
+                xAxis: { type: 'category', boundaryGap: false, data: CONFIG_DATA.weekly.days, axisLabel: { color: '#334155', fontSize: 12, fontWeight: 'bold' }, axisLine: axisLineStyle },
                 yAxis: { type: 'value', name: '万元', nameTextStyle: chartTextStyle, axisLabel: chartTextStyle, splitLine: splitLineStyle },
                 series: [
-                    { name: '国内', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, tooltip: { valueFormatter: v => v + ' 万元' }, lineStyle: { color: '#3b82f6', width: 4 }, itemStyle: { color: '#00f0ff' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59, 130, 246, 0.35)' }, { offset: 1, color: 'rgba(59, 130, 246, 0)' }]) }, data: CONFIG_DATA.weekly.domestic },
-                    { name: '海外', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, tooltip: { valueFormatter: v => v + ' 万元' }, lineStyle: { color: '#10b981', width: 4 }, itemStyle: { color: '#10b981' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(16, 185, 129, 0.35)' }, { offset: 1, color: 'rgba(16, 185, 129, 0)' }]) }, data: CONFIG_DATA.weekly.overseas }
+                    { name: '国内', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6, tooltip: { valueFormatter: v => v + ' 万元' }, lineStyle: { color: '#3b82f6', width: 3 }, itemStyle: { color: '#2563eb' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(59, 130, 246, 0.12)' }, { offset: 1, color: 'rgba(59, 130, 246, 0)' }]) }, data: CONFIG_DATA.weekly.domestic },
+                    { name: '海外', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6, tooltip: { valueFormatter: v => v + ' 万元' }, lineStyle: { color: '#10b981', width: 3 }, itemStyle: { color: '#059669' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(16, 185, 129, 0.12)' }, { offset: 1, color: 'rgba(16, 185, 129, 0)' }]) }, data: CONFIG_DATA.weekly.overseas }
                 ]
             });
 
             // 3. 物料类别占比
             pieChart.setOption({
-                tooltip: { trigger: 'item', formatter: '{b} : {c}万元 ({d}%)', backgroundColor: 'rgba(15, 23, 42, 0.9)', textStyle: { color: '#fff' } },
+                tooltip: { trigger: 'item', formatter: '{b} : {c}万 ({d}%)', backgroundColor: 'rgba(255, 255, 255, 0.98)', borderColor: '#e2e8f0', textStyle: { color: '#334155' } },
                 legend: { show: false }, 
-                series: [{ name: '物料占比', type: 'pie', radius: ['40%', '75%'], center: ['50%', '50%'], roseType: 'radius', itemStyle: { borderRadius: 6, borderColor: '#020617', borderWidth: 2 }, label: { show: true, color: '#cbd5e1', fontSize: 14, fontWeight: 'bold', formatter: '{b}\n{d}%' }, labelLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.3)', width: 1.5 }, smooth: 0.2, length: 12, length2: 18 }, data: CONFIG_DATA.materials }]
+                series: [{ 
+                    name: '物料占比', type: 'pie', radius: ['35%', '70%'], center: ['50%', '50%'], roseType: 'radius', 
+                    itemStyle: { borderRadius: 4, borderColor: '#ffffff', borderWidth: 2 }, // 饼图边缘切线改为白色线，极致精细
+                    label: { show: true, color: '#475569', fontSize: 12, fontWeight: 'bold', formatter: '{b}\n{d}%' }, 
+                    labelLine: { lineStyle: { color: '#cbd5e1', width: 1 }, smooth: 0.2, length: 6, length2: 12 }, 
+                    data: CONFIG_DATA.materials 
+                }]
             });
 
             // 4. 月度出库趋势
             monthChart.setOption({
                 tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
                 legend: { data: ['出库金额', '环比增长率'], textStyle: chartTextStyle, top: '0%' },
-                grid: { top: '22%', left: '8%', right: '8%', bottom: '12%', containLabel: true },
-                xAxis: { type: 'category', data: monthKeys.map(m => m + '月'), axisLabel: { color: '#cbd5e1', fontSize: 14, fontWeight: 'bold' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } } },
+                grid: { top: '25%', left: '5%', right: '5%', bottom: '10%', containLabel: true },
+                xAxis: { type: 'category', data: monthKeys.map(m => m + '月'), axisLabel: { color: '#334155', fontSize: 12, fontWeight: 'bold' }, axisLine: axisLineStyle },
                 yAxis: [
                     { type: 'value', name: '万元', nameTextStyle: chartTextStyle, axisLabel: chartTextStyle, splitLine: splitLineStyle },
-                    { type: 'value', name: '增长率', nameTextStyle: chartTextStyle, axisLabel: { formatter: '{value} %', color: '#cbd5e1', fontSize: 13 }, splitLine: { show: false } }
+                    { type: 'value', name: '增长率', nameTextStyle: chartTextStyle, axisLabel: { formatter: '{value} %', color: '#475569', fontSize: 11 }, splitLine: { show: false } }
                 ],
                 series: [
-                    { name: '出库金额', type: 'bar', barWidth: '35%', tooltip: { valueFormatter: v => v + ' 万元' }, itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#a855f7' }, { offset: 1, color: '#3b82f6' }]), borderRadius: [4, 4, 0, 0] }, data: trendAmountData },
-                    { name: '环比增长率', type: 'line', yAxisIndex: 1, smooth: true, symbol: 'diamond', symbolSize: 8, tooltip: { valueFormatter: v => v + ' %' }, lineStyle: { color: '#f97316', width: 3 }, itemStyle: { color: '#f97316' }, data: trendRateData }
+                    { name: '出库金额', type: 'bar', barWidth: '30%', tooltip: { valueFormatter: v => v + ' 万元' }, itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#c084fc' }, { offset: 1, color: '#6366f1' }]), borderRadius: [4, 4, 0, 0] }, data: trendAmountData },
+                    { name: '环比增长率', type: 'line', yAxisIndex: 1, smooth: true, symbol: 'diamond', symbolSize: 6, tooltip: { valueFormatter: v => v + ' %' }, lineStyle: { color: '#f97316', width: 2 }, itemStyle: { color: '#ea580c' }, data: trendRateData }
                 ]
             });
 
@@ -519,7 +529,9 @@
             document.getElementById('monthSelector').value = latestMonth;
             onMonthChange(latestMonth);
 
+            // 自适应防挤压重绘
             window.addEventListener('resize', () => { todayChart.resize(); weekChart.resize(); pieChart.resize(); monthChart.resize(); });
+            setTimeout(() => { todayChart.resize(); weekChart.resize(); pieChart.resize(); monthChart.resize(); }, 100);
         }
     </script>
 </body>
