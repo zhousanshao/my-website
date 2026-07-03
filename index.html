@@ -211,13 +211,14 @@
                     数据筛选:
                 </span>
                 <select class="month-select" id="monthSelector" onchange="onMonthChange(this.value)">
-                    <option value="all">选择月份 (1-6月)</option>
+                    <option value="all">选择月份 (1-7月)</option>
                     <option value="1">1月</option>
                     <option value="2">2月</option>
                     <option value="3">3月</option>
                     <option value="4">4月</option>
                     <option value="5">5月</option>
                     <option value="6">6月</option>
+                    <option value="7">7月</option>
                 </select>
             </div>
             <div class="title">玉汝成出库数据智能看板</div>
@@ -353,20 +354,21 @@
                 '3': { total: 23686004, domestic: 1061451, domesticTarget: 1150000, overseas: 21800595, overseasTarget: 16860000 },
                 '4': { total: 30049287, domestic: 1277545, domesticTarget: 1290000, overseas: 26785633, overseasTarget: 18000000 },
                 '5': { total: 14715009, domestic: 1248567, domesticTarget: 1489000, overseas: 10438323, overseasTarget: 17570000 },
-                '6': { total: 24365397,   domestic: 1383695,   domesticTarget: 1450000, overseas: 19066128,   overseasTarget: 17980000 }
+                '6': { total: 24365397, domestic: 1383695, domesticTarget: 1450000, overseas: 19066128, overseasTarget: 17980000 },
+                '7': { total: 407081,   domestic: 72708,   domesticTarget: 1450000, overseas: 281835,   overseasTarget: 16790000 }
             },
-            today: { domestic: 10, overseas: 610 },
+            today: { domestic: 7, overseas: 15 },
             weekly: {
-                days: [ '周六','周日','周一','周二'],
-                domestic: [1,0,39,10],
-                overseas: [4,0,147,610]
+                days: [ '周一','周二','周三','周四'],
+                domestic: [39,11,1,7],
+                overseas: [147,613,13,15]
             },
             materials: [
-                { value: 618, name: '氧化锆', itemStyle: { color: '#3b82f6' } }, // 调整为更柔和清晰的商务色
-                { value: 337,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
-                { value: 36,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
-                { value: 54,  name: '耗材', itemStyle: { color: '#fbbf24' } },
-                { value: 110,  name: '影像设备', itemStyle: { color: '#f472b6' } }
+                { value: 23, name: '氧化锆', itemStyle: { color: '#3b82f6' } }, // 调整为更柔和清晰的商务色
+                { value: 10,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
+                { value: 1,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
+                { value: 1,  name: '耗材', itemStyle: { color: '#fbbf24' } },
+                { value: 0,  name: '影像设备', itemStyle: { color: '#f472b6' } }
             ]
         };
 
@@ -404,8 +406,8 @@
 
         function onMonthChange(month) {
             const data = dashboardData[month];
-            const domProgress = ((data.domestic / data.domesticTarget) * 100).toFixed(1);
-            const ovProgress = ((data.overseas / data.overseasTarget) * 100).toFixed(1);
+            const domProgress = data.domesticTarget > 0 ? ((data.domestic / data.domesticTarget) * 100).toFixed(1) : "0.0";
+            const ovProgress = data.overseasTarget > 0 ? ((data.overseas / data.overseasTarget) * 100).toFixed(1) : "0.0";
 
             document.getElementById('totalValue').innerText = formatNumber(data.total);
             document.getElementById('domesticValue').innerText = formatNumber(data.domestic);
@@ -458,7 +460,7 @@
                         tooltip: { valueFormatter: v => v + ' 万元' },
                         itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#60a5fa' }, { offset: 1, color: '#2563eb' }]), borderRadius: [4, 4, 0, 0] },
                         data: [CONFIG_DATA.today.domestic, CONFIG_DATA.today.overseas],
-                        label: { show: true, position: 'top', color: '#475569', fontSize: 11, fontWeight: 'bold', formatter: '{c} 万' } // 修复：标签在白底上改为深灰色
+                        label: { show: true, position: 'top', color: '#475569', fontSize: 11, fontWeight: 'bold', formatter: '{c} 万' } 
                     },
                     {
                         name: '本周出库', type: 'bar', barWidth: '22%',
@@ -489,7 +491,7 @@
                 legend: { show: false }, 
                 series: [{ 
                     name: '物料占比', type: 'pie', radius: ['35%', '70%'], center: ['50%', '50%'], roseType: 'radius', 
-                    itemStyle: { borderRadius: 4, borderColor: '#ffffff', borderWidth: 2 }, // 饼图边缘切线改为白色线，极致精细
+                    itemStyle: { borderRadius: 4, borderColor: '#ffffff', borderWidth: 2 }, 
                     label: { show: true, color: '#475569', fontSize: 12, fontWeight: 'bold', formatter: '{b}\n{d}%' }, 
                     labelLine: { lineStyle: { color: '#cbd5e1', width: 1 }, smooth: 0.2, length: 6, length2: 12 }, 
                     data: CONFIG_DATA.materials 
