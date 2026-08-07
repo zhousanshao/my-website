@@ -211,7 +211,7 @@
                     数据筛选:
                 </span>
                 <select class="month-select" id="monthSelector" onchange="onMonthChange(this.value)">
-                    <option value="all">选择月份 (1-7月)</option>
+                    <option value="all">选择月份 (1-8月)</option>
                     <option value="1">1月</option>
                     <option value="2">2月</option>
                     <option value="3">3月</option>
@@ -357,20 +357,20 @@
                 '5': { total: 14715009, domestic: 1248567, domesticTarget: 1489000, overseas: 10438323, overseasTarget: 17570000 },
                 '6': { total: 24365397, domestic: 1383695, domesticTarget: 1450000, overseas: 19066128, overseasTarget: 17980000 },
                 '7': { total: 10385220,   domestic: 819787,   domesticTarget: 1450000, overseas: 7907217,   overseasTarget: 18070000 },
-                '8': { total: 467001, domestic: 143078, domesticTarget: 1500000, overseas: 329651, overseasTarget: 18540000 },
+                '8': { total: 1178229, domestic: 216861, domesticTarget: 1500000, overseas: 732646, overseasTarget: 18540000 },
             },
-            today: { domestic: 3, overseas: 13 },
+            today: { domestic: 7, overseas: 40 },
             weekly: {
-                days: [ '周日', '周一', '周二', '周三'],
-                domestic: [0,4,3,3],
-                overseas: [0,5,15,13]
+                days: [ '周日', '周一', '周二', '周三', '周四'],
+                domestic: [0,4,3,3,7],
+                overseas: [0,5,15,13,40]
             },
             materials: [
-                { value: 28, name: '氧化锆', itemStyle: { color: '#3b82f6' } }, // 调整为更柔和清晰的商务色
-                { value: 8,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
-                { value: 3,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
-                { value: 2,  name: '耗材', itemStyle: { color: '#fbbf24' } },
-                { value: 5,  name: '影像设备', itemStyle: { color: '#f472b6' } }
+                { value: 58, name: '氧化锆', itemStyle: { color: '#3b82f6' } }, // 调整为更柔和清晰的商务色
+                { value: 18,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
+                { value: 9,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
+                { value: 8,  name: '耗材', itemStyle: { color: '#fbbf24' } },
+                { value: 15,  name: '影像设备', itemStyle: { color: '#f472b6' } }
             ]
         };
 
