@@ -220,6 +220,7 @@
                     <option value="6">6月</option>
                     <option value="7">7月</option>
                     <option value="8">8月</option>
+                    <option value="9">9月</option>
                 </select>
             </div>
             <div class="title">玉汝成出库数据智能看板</div>
@@ -358,19 +359,20 @@
                 '6': { total: 24365397, domestic: 1383695, domesticTarget: 1450000, overseas: 19066128, overseasTarget: 17980000 },
                 '7': { total: 10385220,   domestic: 814727,   domesticTarget: 1450000, overseas: 7907217,   overseasTarget: 18070000 },
                 '8': { total: 15536205, domestic: 800192, domesticTarget: 1500000, overseas: 13333722, overseasTarget: 18540000 },
+                '9': { total: 406786, domestic: 98127, domesticTarget: 1550000, overseas: 317860, overseasTarget: 19595000 },
             },
-            today: { domestic: 2, overseas: 603 },
+            today: { domestic: 2, overseas: 23 },
             weekly: {
-                days: [ '周日','周一'],
-                domestic: [0,2],
-                overseas: [0,603]
+                days: [ '周日','周一','周二','周三'],
+                domestic: [0,2,7,2],
+                overseas: [0,603,8,23]
             },
             materials: [
-                { value: 808, name: '氧化锆', itemStyle: { color: '#3b82f6' } }, // 调整为更柔和清晰的商务色
-                { value: 331,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
-                { value: 19,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
-                { value: 63,  name: '耗材', itemStyle: { color: '#fbbf24' } },
-                { value: 90,  name: '影像设备', itemStyle: { color: '#f472b6' } }
+                { value: 22, name: '氧化锆', itemStyle: { color: '#3b82f6' } }, // 调整为更柔和清晰的商务色
+                { value: 8,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
+                { value: 1,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
+                { value: 2,  name: '耗材', itemStyle: { color: '#fbbf24' } },
+                { value: 3,  name: '影像设备', itemStyle: { color: '#f472b6' } }
             ]
         };
 
