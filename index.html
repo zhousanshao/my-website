@@ -22,7 +22,6 @@
             flex-direction: column;
             padding: 10px; 
         }
-
         /* 🔒 密码访问锁屏控制层样式 (全面白底化) */
         #authOverlay {
             position: fixed;
@@ -94,7 +93,6 @@
             display: none;
             font-weight: 500;
         }
-
         /* ⚙️ 看板主体结构样式 */
         #mainDashboard {
             display: none; 
@@ -193,7 +191,6 @@
     </style>
 </head>
 <body>
-
     <div id="authOverlay">
         <div class="login-box">
             <div class="login-title">🔒 玉汝成数据监控安全认证</div>
@@ -202,7 +199,6 @@
             <div class="error-msg" id="errorTip">❌ 密码错误，请重新输入！</div>
         </div>
     </div>
-
     <div id="mainDashboard">
         <div class="header">
             <div class="filter-container">
@@ -226,7 +222,6 @@
             <div class="title">玉汝成出库数据智能看板</div>
             <div class="time" id="liveTime">加载中...</div>
         </div>
-
         <div class="dashboard-content">
             <div class="top-row">
                 <div class="card data-card total-card">
@@ -283,18 +278,17 @@
                     </div>
                 </div>
             </div>
-
             <div class="mid-row">
+                <!-- 替换：主要产品库存数量 横向条形图 -->
                 <div class="card">
-                    <div class="chart-title"><div class="title-text">今日/本周出库</div><span class="sub-en">COMPARE</span></div>
-                    <div id="todayChart" class="chart-inner"></div>
+                    <div class="chart-title"><div class="title-text">主要产品库存数量</div><span class="sub-en">STOCK</span></div>
+                    <div id="stockChart" class="chart-inner"></div>
                 </div>
                 <div class="card">
                     <div class="chart-title"><div class="title-text">本周出库趋势</div><span class="sub-en">TREND</span></div>
                     <div id="weekChart" class="chart-inner"></div>
                 </div>
             </div>
-
             <div class="bot-row">
                 <div class="card">
                     <div class="chart-title"><div class="title-text">物料类别占比</div><span class="sub-en">PROPORTION</span></div>
@@ -307,18 +301,15 @@
             </div>
         </div>
     </div>
-
     <script>
         /* ====================================================================
             🔒 【安全隐私与定时无感强刷机制】
-           ==================================================================== */
+        ==================================================================== */
         const TARGET_PASSWORD = "202606"; 
         const REFRESH_INTERVAL = 8 * 60 * 60 * 1000; 
-
         document.getElementById('passInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') verifyPassword();
         });
-
         function verifyPassword() {
             const inputVal = document.getElementById('passInput').value;
             if (inputVal === TARGET_PASSWORD) {
@@ -329,7 +320,6 @@
                 document.getElementById('passInput').value = '';
             }
         }
-
         function unlockDashboard() {
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('mainDashboard').style.display = 'flex';
@@ -337,7 +327,6 @@
                 initAllCharts();
             }, 50);
         }
-
         window.onload = function() {
             const token = localStorage.getItem('yurucheng_auth_token');
             if (token === 'authenticated_passed') {
@@ -345,10 +334,9 @@
             }
             setTimeout(() => { window.location.reload(); }, REFRESH_INTERVAL);
         };
-
         /* ====================================================================
             ⚙️ 【全局数据中央控制仓】
-           ==================================================================== */
+        ==================================================================== */
         const CONFIG_DATA = {
             months: {
                 '1': { total: 16041547, domestic: 1198645, domesticTarget: 1240000, overseas: 13802217, overseasTarget: 13560000 },
@@ -359,29 +347,35 @@
                 '6': { total: 24365397, domestic: 1383695, domesticTarget: 1450000, overseas: 19066128, overseasTarget: 17980000 },
                 '7': { total: 10385220,   domestic: 814727,   domesticTarget: 1450000, overseas: 7907217,   overseasTarget: 18070000 },
                 '8': { total: 15536205, domestic: 800192, domesticTarget: 1500000, overseas: 13333722, overseasTarget: 18540000 },
-                '9': { total: 3833442, domestic: 437431, domesticTarget: 1550000, overseas: 3642454, overseasTarget: 19595000 },
+                '9': { total: 4080176, domestic: 475368, domesticTarget: 1550000, overseas: 3863350, overseasTarget: 19595000 },
             },
-            today: { domestic: 3, overseas: 42 },
+            today: { domestic: 3, overseas: 22 },
             weekly: {
-                days: [ '周一','周二','周三','周四','周五','周六','周日'],
-                domestic: [2,11,7,3,1,2,0],
-                overseas: [27,98,43,42,67,10,0]
+                days: [ '周日','周一'],
+                domestic: [0,3],
+                overseas: [0,22]
             },
             materials: [
-                { value: 166, name: '氧化锆', itemStyle: { color: '#3b82f6' } }, // 调整为更柔和清晰的商务色
+                { value: 166, name: '氧化锆', itemStyle: { color: '#3b82f6' } },
                 { value: 97,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
                 { value: 3,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
                 { value: 21,  name: '耗材', itemStyle: { color: '#fbbf24' } },
                 { value: 51,  name: '影像设备', itemStyle: { color: '#f472b6' } }
+            ],
+            // ==========【库存数据，后续新增/修改产品只改这里】==========
+            stock: [
+                {product:"8Pro", qty:29, safe:20},
+                {product:"6X雕铣机", qty:8, safe:10},
+                {product:"S03扫描仪", qty:51, safe:30},
+                {product:"S05扫描仪", qty:84, safe:40},
+                {product:"3D打印机", qty:28, safe:20},
             ]
         };
-
         /* ====================================================================
             🏗️ 【核心自动化数据重筑计算链】
-           ==================================================================== */
+        ==================================================================== */
         const weeklyDomSum = CONFIG_DATA.weekly.domestic.reduce((a, b) => a + b, 0);
         const weeklyOvSum = CONFIG_DATA.weekly.overseas.reduce((a, b) => a + b, 0);
-
         const dashboardData = { ...CONFIG_DATA.months };
         let allTotal = 0, allDom = 0, allDomTar = 0, allOv = 0, allOvTar = 0;
         Object.keys(CONFIG_DATA.months).forEach(m => {
@@ -390,7 +384,6 @@
             allOvTar += CONFIG_DATA.months[m].overseasTarget;
         });
         dashboardData['all'] = { total: allTotal, domestic: allDom, domesticTarget: allDomTar, overseas: allOv, overseasTarget: allOvTar };
-
         const monthKeys = Object.keys(CONFIG_DATA.months).sort((a, b) => Number(a) - Number(b));
         const trendAmountData = []; const trendRateData = [];
         monthKeys.forEach((m, idx) => {
@@ -401,39 +394,33 @@
                 trendRateData.push(Number((((currentTotal - prevTotal) / prevTotal) * 100).toFixed(1)));
             }
         });
-
         function updateTime() {
             const now = new Date();
             document.getElementById('liveTime').innerText = `📅 ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
         }
         function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
-
         function onMonthChange(month) {
             const data = dashboardData[month];
             const domProgress = data.domesticTarget > 0 ? ((data.domestic / data.domesticTarget) * 100).toFixed(1) : "0.0";
             const ovProgress = data.overseasTarget > 0 ? ((data.overseas / data.overseasTarget) * 100).toFixed(1) : "0.0";
-
             document.getElementById('totalValue').innerText = formatNumber(data.total);
             document.getElementById('domesticValue').innerText = formatNumber(data.domestic);
             document.getElementById('domesticTargetText').innerText = `目标: ${formatNumber(data.domesticTarget)} 元`;
             document.getElementById('domesticProgressText').innerText = `进度: ${domProgress}%`;
             document.getElementById('domesticBar').style.width = `${domProgress}%`;
-
             document.getElementById('overseasValue').innerText = formatNumber(data.overseas);
             document.getElementById('overseasTargetText').innerText = `目标: ${formatNumber(data.overseasTarget)} 元`;
             document.getElementById('overseasProgressText').innerText = `进度: ${ovProgress}%`;
             document.getElementById('overseasBar').style.width = `${ovProgress}%`;
         }
-
         /* --- 四大图表渲染核心引擎 (全面深度白底化适配) --- */
         function initAllCharts() {
             setInterval(updateTime, 1000); updateTime();
             
-            const todayChart = echarts.init(document.getElementById('todayChart'));
+            const stockChart = echarts.init(document.getElementById('stockChart'));
             const weekChart = echarts.init(document.getElementById('weekChart'));
             const pieChart = echarts.init(document.getElementById('pieChart'));
             const monthChart = echarts.init(document.getElementById('monthChart'));
-
             // 升级：浅色基调文本与轻灰网格
             const chartTextStyle = { color: '#64748b', fontSize: 12, fontWeight: 500 };
             const splitLineStyle = { lineStyle: { color: '#f1f5f9' } }; 
@@ -447,33 +434,39 @@
                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
             };
 
-            // 1. 今日/本周出库
-            todayChart.setOption({
-                tooltip: lightTooltip,
-                legend: { data: ['今日出库', '本周出库'], textStyle: chartTextStyle, top: '0%' },
-                grid: { top: '25%', left: '5%', right: '5%', bottom: '10%', containLabel: true },
-                xAxis: {
-                    type: 'category', data: ['国内团队', '海外团队'],
-                    axisLabel: { color: '#334155', fontSize: 12, fontWeight: 'bold' },
-                    axisLine: axisLineStyle
+            // ========= 库存横向条形图【新增】=========
+            // 按库存升序，库存大的放顶部
+            let stockList = [...CONFIG_DATA.stock].sort((a,b) => a.qty - b.qty);
+            let yData = stockList.map(item => item.product);
+            let seriesData = stockList.map(item=>{
+                let color;
+                if(item.qty < item.safe){
+                    color = "#e53e3e"; //红：库存不足
+                }else if(item.qty < item.safe *1.5){
+                    color = "#ecc94b"; //黄：预警
+                }else{
+                    color = "#38a169"; //绿：充足
+                }
+                return {
+                    value: item.qty,
+                    safe: item.safe,
+                    itemStyle:{color:color}
+                }
+            })
+            stockChart.setOption({
+                tooltip:{
+                    trigger:"axis",
+                    formatter:"产品：{b}<br/>当前库存：{c}<br/>安全库存：{safe}"
                 },
-                yAxis: { type: 'value', name: '万元', nameTextStyle: chartTextStyle, axisLabel: chartTextStyle, splitLine: splitLineStyle },
-                series: [
-                    {
-                        name: '今日出库', type: 'bar', barWidth: '22%',
-                        tooltip: { valueFormatter: v => v + ' 万元' },
-                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#60a5fa' }, { offset: 1, color: '#2563eb' }]), borderRadius: [4, 4, 0, 0] },
-                        data: [CONFIG_DATA.today.domestic, CONFIG_DATA.today.overseas],
-                        label: { show: true, position: 'top', color: '#475569', fontSize: 11, fontWeight: 'bold', formatter: '{c} 万' } 
-                    },
-                    {
-                        name: '本周出库', type: 'bar', barWidth: '22%',
-                        tooltip: { valueFormatter: v => v + ' 万元' },
-                        itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#34d399' }, { offset: 1, color: '#059669' }]), borderRadius: [4, 4, 0, 0] },
-                        data: [weeklyDomSum, weeklyOvSum], 
-                        label: { show: true, position: 'top', color: '#475569', fontSize: 11, fontWeight: 'bold', formatter: '{c} 万' }
-                    }
-                ]
+                grid: { top: '10%', left: '12%', right: '8%', bottom: '10%', containLabel: true },
+                xAxis:{type:"value", name:"库存数量", nameTextStyle:chartTextStyle, axisLabel:chartTextStyle, splitLine:splitLineStyle},
+                yAxis:{type:"category", data:yData, axisLine:axisLineStyle},
+                series:[{
+                    name:"库存数量",
+                    type:"bar",
+                    data:seriesData,
+                    label:{show:true, position:"right", fontSize:11, fontWeight:"bold"}
+                }]
             });
 
             // 2. 本周出库趋势
@@ -488,7 +481,6 @@
                     { name: '海外', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6, tooltip: { valueFormatter: v => v + ' 万元' }, lineStyle: { color: '#10b981', width: 3 }, itemStyle: { color: '#059669' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(16, 185, 129, 0.12)' }, { offset: 1, color: 'rgba(16, 185, 129, 0)' }]) }, data: CONFIG_DATA.weekly.overseas }
                 ]
             });
-
             // 3. 物料类别占比
             pieChart.setOption({
                 tooltip: { trigger: 'item', formatter: '{b} : {c}万 ({d}%)', backgroundColor: 'rgba(255, 255, 255, 0.98)', borderColor: '#e2e8f0', textStyle: { color: '#334155' } },
@@ -501,7 +493,6 @@
                     data: CONFIG_DATA.materials 
                 }]
             });
-
             // 4. 月度出库趋势
             monthChart.setOption({
                 tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
@@ -517,7 +508,6 @@
                     { name: '环比增长率', type: 'line', yAxisIndex: 1, smooth: true, symbol: 'diamond', symbolSize: 6, tooltip: { valueFormatter: v => v + ' %' }, lineStyle: { color: '#f97316', width: 2 }, itemStyle: { color: '#ea580c' }, data: trendRateData }
                 ]
             });
-
             // 轮播组件驱动
             function enableCarousel(instance, count) {
                 let idx = -1;
@@ -528,16 +518,27 @@
                     instance.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: idx });
                 }, 3000);
             }
-            enableCarousel(todayChart, 2); enableCarousel(weekChart, CONFIG_DATA.weekly.days.length); enableCarousel(pieChart, CONFIG_DATA.materials.length); enableCarousel(monthChart, monthKeys.length);
-
+            enableCarousel(stockChart, CONFIG_DATA.stock.length);
+            enableCarousel(weekChart, CONFIG_DATA.weekly.days.length);
+            enableCarousel(pieChart, CONFIG_DATA.materials.length);
+            enableCarousel(monthChart, monthKeys.length);
             // 🎯 【默认加载最新月份数据】
             const latestMonth = monthKeys[monthKeys.length - 1]; 
             document.getElementById('monthSelector').value = latestMonth;
             onMonthChange(latestMonth);
-
             // 自适应防挤压重绘
-            window.addEventListener('resize', () => { todayChart.resize(); weekChart.resize(); pieChart.resize(); monthChart.resize(); });
-            setTimeout(() => { todayChart.resize(); weekChart.resize(); pieChart.resize(); monthChart.resize(); }, 100);
+            window.addEventListener('resize', () => { 
+                stockChart.resize();
+                weekChart.resize(); 
+                pieChart.resize(); 
+                monthChart.resize(); 
+            });
+            setTimeout(() => { 
+                stockChart.resize();
+                weekChart.resize(); 
+                pieChart.resize(); 
+                monthChart.resize(); 
+            }, 100);
         }
     </script>
 </body>
