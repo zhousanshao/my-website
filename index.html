@@ -6,23 +6,21 @@
     <title>玉汝成出库数据智能看板</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
-        /* 基础样式复位与现代办公高雅浅色背景 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            background-color: #f8fafc; /* 浅雅白灰色 */
+            background-color: #f8fafc;
             color: #334155;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 10px; 
+            padding: 10px;
         }
-        /* 🔒 密码访问锁屏控制层样式 (全面白底化) */
         #authOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -93,16 +91,15 @@
             display: none;
             font-weight: 500;
         }
-        /* ⚙️ 看板主体结构样式 */
         #mainDashboard {
-            display: none; 
+            display: none;
             flex-direction: column;
-            height: 100%; 
+            height: 100%;
         }
         .header {
-            height: 60px; 
+            height: 60px;
             display: flex;
-            justify-content: space-between; 
+            justify-content: space-between;
             align-items: center;
             padding: 0 10px;
             position: relative;
@@ -112,12 +109,12 @@
             margin-bottom: 10px;
         }
         .header .title {
-            font-size: 24px; 
-            font-weight: 800; 
-            color: #0f172a; /* 总裁深灰蓝，极为稳重 */
-            letter-spacing: 4px; 
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: 4px;
             text-align: center;
-            flex: 1; 
+            flex: 1;
             z-index: 2;
         }
         .filter-container { width: 320px; display: flex; align-items: center; gap: 8px; z-index: 2; }
@@ -130,63 +127,56 @@
         .month-select:hover { border-color: #94a3b8; }
         .month-select:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
         .header .time { font-size: 15px; color: #64748b; font-family: 'Courier New', Courier, monospace; font-weight: bold; width: 320px; text-align: right; z-index: 2; letter-spacing: 1px; }
-        
-        .dashboard-content { 
-            flex: 1; 
-            padding: 5px 0 0 0; 
-            display: grid; 
-            grid-template-rows: auto 1fr 1fr; 
-            gap: 15px; 
-            min-height: 0; 
+        .dashboard-content {
+            flex: 1;
+            padding: 5px 0 0 0;
+            display: grid;
+            grid-template-rows: auto 1fr 1fr;
+            gap: 15px;
+            min-height: 0;
         }
         .card {
-            background: #ffffff; 
-            border: 1px solid #e2e8f0; 
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05); 
-            padding: 14px 18px; 
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+            padding: 14px 18px;
             display: flex; flex-direction: column; position: relative;
-            min-height: 0; 
+            min-height: 0;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .card:hover { 
+        .card:hover {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
         }
-        
         .top-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .data-card { justify-content: center; padding: 14px 20px; }
         .data-card .card-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
         .data-card .label { font-size: 14px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 8px; }
         .data-card .icon-wrapper { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .data-card .value-box { display: flex; align-items: baseline; margin-top: 2px; }
-        .data-card .value { font-size: 34px; font-weight: 800; font-family: 'Arial Black', sans-serif; letter-spacing: -0.5px; } 
+        .data-card .value { font-size: 34px; font-weight: 800; font-family: 'Arial Black', sans-serif; letter-spacing: -0.5px; }
         .data-card .unit { font-size: 13px; color: #94a3b8; margin-left: 6px; font-weight: bold; }
-        
-        /* 数据大字轻量色彩 */
-        .total-card .value { color: #d97706; } /* 琥珀色 */
+        .total-card .value { color: #d97706; }
         .total-card .icon-wrapper { background: #fef3c7; }
-        .domestic-card .value { color: #0284c7; } /* 商务蓝 */
+        .domestic-card .value { color: #0284c7; }
         .domestic-card .icon-wrapper { background: #e0f2fe; }
-        .overseas-card .value { color: #059669; } /* 优雅绿 */
+        .overseas-card .value { color: #059669; }
         .overseas-card .icon-wrapper { background: #d1fae5; }
-        
         .target-box { margin-top: 6px; font-size: 12px; color: #64748b; display: flex; justify-content: space-between; font-weight: 600; }
         .progress-container { width: 100%; height: 6px; background: #f1f5f9; border-radius: 4px; margin-top: 6px; overflow: hidden; }
         .progress-bar { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         .domestic-bar { background: linear-gradient(90deg, #3b82f6, #0284c7); }
         .overseas-bar { background: linear-gradient(90deg, #10b981, #059669); }
-        
         .mid-row, .bot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 0; }
         .chart-title { font-size: 15px; font-weight: 700; color: #0f172a; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; margin-bottom: 10px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
         .chart-title::before { content: ''; display: inline-block; width: 4px; height: 14px; background: #2563eb; margin-right: 8px; vertical-align: middle; border-radius: 2px; }
         .chart-title .title-text { flex: 1; }
         .chart-title span.sub-en { font-size: 11px; color: #2563eb; font-family: 'Arial'; font-weight: 700; border: 1px solid #bfdbfe; padding: 1px 4px; border-radius: 3px; background: #eff6ff; }
-        
-        .chart-inner { 
-            flex: 1; 
-            width: 100%; 
-            height: 0; 
-            min-height: 0; 
+        .chart-inner {
+            flex: 1;
+            width: 100%;
+            height: 0;
+            min-height: 0;
         }
     </style>
 </head>
@@ -279,7 +269,6 @@
                 </div>
             </div>
             <div class="mid-row">
-                <!-- 替换：主要产品库存数量 横向条形图 -->
                 <div class="card">
                     <div class="chart-title"><div class="title-text">主要产品库存数量</div><span class="sub-en">STOCK</span></div>
                     <div id="stockChart" class="chart-inner"></div>
@@ -291,7 +280,7 @@
             </div>
             <div class="bot-row">
                 <div class="card">
-                    <div class="chart-title"><div class="title-text">物料类别占比</div><span class="sub-en">PROPORTION</span></div>
+                    <div class="chart-title"><div class="title-text">销售金额占比</div><span class="sub-en">PROPORTION</span></div>
                     <div id="pieChart" class="chart-inner"></div>
                 </div>
                 <div class="card">
@@ -302,11 +291,8 @@
         </div>
     </div>
     <script>
-        /* ====================================================================
-            🔒 【安全隐私与定时无感强刷机制】
-        ==================================================================== */
-        const TARGET_PASSWORD = "202606"; 
-        const REFRESH_INTERVAL = 8 * 60 * 60 * 1000; 
+        const TARGET_PASSWORD = "202606";
+        const REFRESH_INTERVAL = 8 * 60 * 60 * 1000;
         document.getElementById('passInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') verifyPassword();
         });
@@ -334,9 +320,6 @@
             }
             setTimeout(() => { window.location.reload(); }, REFRESH_INTERVAL);
         };
-        /* ====================================================================
-            ⚙️ 【全局数据中央控制仓】
-        ==================================================================== */
         const CONFIG_DATA = {
             months: {
                 '1': { total: 16041547, domestic: 1198645, domesticTarget: 1240000, overseas: 13802217, overseasTarget: 13560000 },
@@ -347,13 +330,13 @@
                 '6': { total: 24365397, domestic: 1383695, domesticTarget: 1450000, overseas: 19066128, overseasTarget: 17980000 },
                 '7': { total: 10385220,   domestic: 814727,   domesticTarget: 1450000, overseas: 7907217,   overseasTarget: 18070000 },
                 '8': { total: 15536205, domestic: 800192, domesticTarget: 1500000, overseas: 13333722, overseasTarget: 18540000 },
-                '9': { total: 8189509, domestic: 457487, domesticTarget: 1550000, overseas: 7168074, overseasTarget: 19595000 },
+                '9': { total: 9660555, domestic: 493775, domesticTarget: 1550000, overseas: 8202485, overseasTarget: 19595000 },
             },
-            today: { domestic: -5, overseas: 113},
+            today: { domestic: 3, overseas: 103},
             weekly: {
-                days: [ '周日','周一','周二'],
-                domestic: [5,1,-5],
-                overseas: [28,57,113]
+                days: [ '周日','周一','周二','周三'],
+                domestic: [5,1,-5,3],
+                overseas: [28,57,113,103]
             },
             materials: [
                 { value: 166, name: '氧化锆', itemStyle: { color: '#3b82f6' } },
@@ -362,18 +345,49 @@
                 { value: 21,  name: '耗材', itemStyle: { color: '#fbbf24' } },
                 { value: 51,  name: '影像设备', itemStyle: { color: '#f472b6' } }
             ],
-            // ==========【库存数据，后续新增/修改产品只改这里】==========
-            stock: [
-                {product:"8Pro", qty:37, safe:20},
-                {product:"6X雕铣机", qty:8, safe:10},
-                {product:"S03扫描仪", qty:50, safe:30},
-                {product:"S05扫描仪", qty:69, safe:40},
-                {product:"3D打印机", qty:36, safe:20},
+            stockGroup: [
+                {
+                    groupName: "雕铣机",
+                    models: [
+                        {name:"5X", qty:17},
+                        {name:"6X", qty:7},
+                        {name:"6S", qty:4},
+                        {name:"8Pro", qty:47},
+                        {name:"9Pro", qty:3}
+                    ]
+                },
+                {
+                    groupName: "扫描仪",
+                    models: [
+                        {name:"S03", qty:50},
+                        {name:"S05", qty:71}
+                    ]
+                },
+                {
+                    groupName: "打印机",
+                    models: [
+                        {name:"UW-01", qty:51},
+                        {name:"DJ89", qty:36},
+                        {name:"P100", qty:25}
+                    ]
+                },
+                {
+                    groupName: "烧结炉",
+                    models: [
+                        {name:"F0+", qty:41},
+                        {name:"HS-007", qty:8}
+                    ]
+                },
+                {
+                    groupName: "烤瓷炉",
+                    models: [
+                        {name:"Px7", qty:74},
+                        {name:"A7+", qty:7},
+                        {name:"C-200", qty:25}
+                    ]
+                }
             ]
         };
-        /* ====================================================================
-            🏗️ 【核心自动化数据重筑计算链】
-        ==================================================================== */
         const weeklyDomSum = CONFIG_DATA.weekly.domestic.reduce((a, b) => a + b, 0);
         const weeklyOvSum = CONFIG_DATA.weekly.overseas.reduce((a, b) => a + b, 0);
         const dashboardData = { ...CONFIG_DATA.months };
@@ -385,14 +399,12 @@
         });
         dashboardData['all'] = { total: allTotal, domestic: allDom, domesticTarget: allDomTar, overseas: allOv, overseasTarget: allOvTar };
         const monthKeys = Object.keys(CONFIG_DATA.months).sort((a, b) => Number(a) - Number(b));
-        const trendAmountData = []; const trendRateData = [];
-        monthKeys.forEach((m, idx) => {
+        const trendAmountData = [];
+        // ========= 替换为你给的同比增长率 =========
+        const trendYoYData = [38, -5, 27, 59, -9, 45, -12, -4, -18];
+        monthKeys.forEach((m) => {
             const currentTotal = CONFIG_DATA.months[m].total;
-            trendAmountData.push(Number((currentTotal / 10000).toFixed(1))); 
-            if (idx === 0) { trendRateData.push(0); } else {
-                const prevTotal = CONFIG_DATA.months[monthKeys[idx - 1]].total;
-                trendRateData.push(Number((((currentTotal - prevTotal) / prevTotal) * 100).toFixed(1)));
-            }
+            trendAmountData.push(Number((currentTotal / 10000).toFixed(1)));
         });
         function updateTime() {
             const now = new Date();
@@ -413,63 +425,131 @@
             document.getElementById('overseasProgressText').innerText = `进度: ${ovProgress}%`;
             document.getElementById('overseasBar').style.width = `${ovProgress}%`;
         }
-        /* --- 四大图表渲染核心引擎 (全面深度白底化适配) --- */
         function initAllCharts() {
             setInterval(updateTime, 1000); updateTime();
-            
             const stockChart = echarts.init(document.getElementById('stockChart'));
             const weekChart = echarts.init(document.getElementById('weekChart'));
             const pieChart = echarts.init(document.getElementById('pieChart'));
             const monthChart = echarts.init(document.getElementById('monthChart'));
-            // 升级：浅色基调文本与轻灰网格
             const chartTextStyle = { color: '#64748b', fontSize: 12, fontWeight: 500 };
-            const splitLineStyle = { lineStyle: { color: '#f1f5f9' } }; 
+            const splitLineStyle = { lineStyle: { color: '#f1f5f9' } };
             const axisLineStyle = { lineStyle: { color: '#cbd5e1' } };
-            const lightTooltip = { 
-                trigger: 'axis', 
-                backgroundColor: 'rgba(255, 255, 255, 0.98)', 
-                borderColor: '#e2e8f0', 
+            const lightTooltip = {
+                trigger: 'axis',
+                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                borderColor: '#e2e8f0',
                 borderWidth: 1,
-                textStyle: { color: '#334155' },
+                padding: [10,12],
+                textStyle: { color: '#334155', fontSize:18 },
                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
             };
-
-            // ========= 库存横向条形图【新增】=========
-            // 按库存升序，库存大的放顶部
-            let stockList = [...CONFIG_DATA.stock].sort((a,b) => a.qty - b.qty);
-            let yData = stockList.map(item => item.product);
-            let seriesData = stockList.map(item=>{
-                let color;
-                if(item.qty < item.safe){
-                    color = "#e53e3e"; //红：库存不足
-                }else if(item.qty < item.safe *1.5){
-                    color = "#ecc94b"; //黄：预警
-                }else{
-                    color = "#38a169"; //绿：充足
-                }
-                return {
-                    value: item.qty,
-                    safe: item.safe,
-                    itemStyle:{color:color}
-                }
+            const itemTooltip = {
+                trigger: 'item',
+                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                borderColor: '#e2e8f0',
+                borderWidth: 1,
+                padding: [10,12],
+                textStyle: { color: '#334155', fontSize:18 },
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+            };
+            // ========= 库存横向堆积条形图 =========
+            const stockGroups = CONFIG_DATA.stockGroup;
+            const yAxisData = stockGroups.map(g => g.groupName);
+            const colorPool = ['#3b82f6','#60a5fa','#34d399','#fbbf24','#f472b6','#a78bfa','#fb7185','#22d3ee','#84cc16','#f97316'];
+            const seriesList = [];
+            const allModelNames = [];
+            stockGroups.forEach(g=>{
+                g.models.forEach(m=>{
+                    allModelNames.push(m.name);
+                })
+            })
+            allModelNames.forEach((modelName, idx)=>{
+                const dataArr = [];
+                stockGroups.forEach(group=>{
+                    const findItem = group.models.find(x=>x.name === modelName);
+                    dataArr.push(findItem ? findItem.qty : null);
+                })
+                seriesList.push({
+                    name: modelName,
+                    type: 'bar',
+                    stack: 'stock',
+                    itemStyle: {color: colorPool[idx % colorPool.length]},
+                    label:{
+                        show:true,
+                        position:'inside',
+                        fontSize:14,
+                        color:'#ffffff',
+                        fontWeight:'bold'
+                    },
+                    data: dataArr
+                })
             })
             stockChart.setOption({
                 tooltip:{
                     trigger:"axis",
-                    formatter:"产品：{b}<br/>当前库存：{c}<br/>安全库存：{safe}"
+                    padding: [10,12],
+                    textStyle: {fontSize:18, color:'#334155'},
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                    borderColor: '#e2e8f0',
+                    borderWidth:1,
+                    formatter: params=>{
+                        if (!params || params.length === 0) return '';
+                        let res = `<div style="font-weight:bold; font-size:15px">${params[0].axisName}</div>`;
+                        params.forEach(p=>{
+                            if(p.value != null && p.value > 0){
+                                res += `${p.seriesName}：${p.value}<br/>`
+                            }
+                        })
+                        return res;
+                    }
                 },
-                grid: { top: '10%', left: '12%', right: '8%', bottom: '10%', containLabel: true },
-                xAxis:{type:"value", name:"库存数量", nameTextStyle:chartTextStyle, axisLabel:chartTextStyle, splitLine:splitLineStyle},
-                yAxis:{type:"category", data:yData, axisLine:axisLineStyle},
-                series:[{
+                legend: { show: false },
+                grid: { top: '12%', left: '14%', right: '8%', bottom: '10%', containLabel: true },
+                xAxis:{
+                    type:"value",
                     name:"库存数量",
-                    type:"bar",
-                    data:seriesData,
-                    label:{show:true, position:"right", fontSize:11, fontWeight:"bold"}
-                }]
+                    nameTextStyle:chartTextStyle,
+                    axisLabel:chartTextStyle,
+                    splitLine:splitLineStyle
+                },
+                yAxis:{
+                    type:"category",
+                    data:yAxisData,
+                    axisLine:axisLineStyle,
+                    axisLabel: {
+                        color: '#000000',
+                        fontSize: 14,
+                        fontWeight: 'bold'
+                    }
+                },
+                series: seriesList
             });
-
-            // 2. 本周出库趋势
+            // 【修复库存条形图轮播】堆积条形图，只高亮Y轴分类，遍历dataIndex
+            function stockCarousel(chartIns, totalYCount){
+                let currentIndex = -1;
+                setInterval(()=>{
+                    currentIndex = (currentIndex + 1) % totalYCount;
+                    chartIns.dispatchAction({
+                        type: 'showTip',
+                        dataIndex: currentIndex
+                    });
+                },3000)
+            }
+            // 通用单系列图表轮播（饼图、折线图等）
+            function enableCarousel(instance, count) {
+                let idx = -1;
+                setInterval(() => {
+                    instance.dispatchAction({ type: 'downplay', seriesIndex: 0, dataIndex: idx });
+                    idx = (idx + 1) % count;
+                    instance.dispatchAction({ type: 'highlight', seriesIndex: 0, dataIndex: idx });
+                    instance.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: idx });
+                }, 3000);
+            }
+            stockCarousel(stockChart, stockGroups.length);
+            enableCarousel(weekChart, CONFIG_DATA.weekly.days.length);
+            enableCarousel(pieChart, CONFIG_DATA.materials.length);
+            enableCarousel(monthChart, monthKeys.length);
+            // 本周出库趋势
             weekChart.setOption({
                 tooltip: lightTooltip,
                 legend: { data: ['国内', '海外'], textStyle: chartTextStyle, top: '0%' },
@@ -481,22 +561,25 @@
                     { name: '海外', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6, tooltip: { valueFormatter: v => v + ' 万元' }, lineStyle: { color: '#10b981', width: 3 }, itemStyle: { color: '#059669' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(16, 185, 129, 0.12)' }, { offset: 1, color: 'rgba(16, 185, 129, 0)' }]) }, data: CONFIG_DATA.weekly.overseas }
                 ]
             });
-            // 3. 物料类别占比
+            // 物料类别销售金额占比
             pieChart.setOption({
-                tooltip: { trigger: 'item', formatter: '{b} : {c}万 ({d}%)', backgroundColor: 'rgba(255, 255, 255, 0.98)', borderColor: '#e2e8f0', textStyle: { color: '#334155' } },
-                legend: { show: false }, 
-                series: [{ 
-                    name: '物料占比', type: 'pie', radius: ['35%', '70%'], center: ['50%', '50%'], roseType: 'radius', 
-                    itemStyle: { borderRadius: 4, borderColor: '#ffffff', borderWidth: 2 }, 
-                    label: { show: true, color: '#475569', fontSize: 12, fontWeight: 'bold', formatter: '{b}\n{d}%' }, 
-                    labelLine: { lineStyle: { color: '#cbd5e1', width: 1 }, smooth: 0.2, length: 6, length2: 12 }, 
-                    data: CONFIG_DATA.materials 
+                tooltip: {
+                    ...itemTooltip,
+                    formatter: '{b} 销售金额 : {c}万 ({d}%)'
+                },
+                legend: { show: false },
+                series: [{
+                    name: '销售金额占比', type: 'pie', radius: ['35%', '70%'], center: ['50%', '50%'], roseType: 'radius',
+                    itemStyle: { borderRadius: 4, borderColor: '#ffffff', borderWidth: 2 },
+                    label: { show: true, color: '#475569', fontSize: 12, fontWeight: 'bold', formatter: '{b}\n{d}%' },
+                    labelLine: { lineStyle: { color: '#cbd5e1', width: 1 }, smooth: 0.2, length: 6, length2: 12 },
+                    data: CONFIG_DATA.materials
                 }]
             });
-            // 4. 月度出库趋势
+            // 月度出库趋势：同比增长率
             monthChart.setOption({
-                tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-                legend: { data: ['出库金额', '环比增长率'], textStyle: chartTextStyle, top: '0%' },
+                tooltip: { ...lightTooltip, axisPointer: { type: 'cross' } },
+                legend: { data: ['出库金额', '同比增长率'], textStyle: chartTextStyle, top: '0%' },
                 grid: { top: '25%', left: '5%', right: '5%', bottom: '10%', containLabel: true },
                 xAxis: { type: 'category', data: monthKeys.map(m => m + '月'), axisLabel: { color: '#334155', fontSize: 12, fontWeight: 'bold' }, axisLine: axisLineStyle },
                 yAxis: [
@@ -505,39 +588,23 @@
                 ],
                 series: [
                     { name: '出库金额', type: 'bar', barWidth: '30%', tooltip: { valueFormatter: v => v + ' 万元' }, itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#c084fc' }, { offset: 1, color: '#6366f1' }]), borderRadius: [4, 4, 0, 0] }, data: trendAmountData },
-                    { name: '环比增长率', type: 'line', yAxisIndex: 1, smooth: true, symbol: 'diamond', symbolSize: 6, tooltip: { valueFormatter: v => v + ' %' }, lineStyle: { color: '#f97316', width: 2 }, itemStyle: { color: '#ea580c' }, data: trendRateData }
+                    { name: '同比增长率', type: 'line', yAxisIndex: 1, smooth: true, symbol: 'diamond', symbolSize: 6, tooltip: { valueFormatter: v => v + ' %' }, lineStyle: { color: '#f97316', width: 2 }, itemStyle: { color: '#ea580c' }, data: trendYoYData }
                 ]
             });
-            // 轮播组件驱动
-            function enableCarousel(instance, count) {
-                let idx = -1;
-                setInterval(() => {
-                    instance.dispatchAction({ type: 'downplay', seriesIndex: 0, dataIndex: idx });
-                    idx = (idx + 1) % count;
-                    instance.dispatchAction({ type: 'highlight', seriesIndex: 0, dataIndex: idx });
-                    instance.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: idx });
-                }, 3000);
-            }
-            enableCarousel(stockChart, CONFIG_DATA.stock.length);
-            enableCarousel(weekChart, CONFIG_DATA.weekly.days.length);
-            enableCarousel(pieChart, CONFIG_DATA.materials.length);
-            enableCarousel(monthChart, monthKeys.length);
-            // 🎯 【默认加载最新月份数据】
-            const latestMonth = monthKeys[monthKeys.length - 1]; 
+            const latestMonth = monthKeys[monthKeys.length - 1];
             document.getElementById('monthSelector').value = latestMonth;
             onMonthChange(latestMonth);
-            // 自适应防挤压重绘
-            window.addEventListener('resize', () => { 
+            window.addEventListener('resize', () => {
                 stockChart.resize();
-                weekChart.resize(); 
-                pieChart.resize(); 
-                monthChart.resize(); 
+                weekChart.resize();
+                pieChart.resize();
+                monthChart.resize();
             });
-            setTimeout(() => { 
+            setTimeout(() => {
                 stockChart.resize();
-                weekChart.resize(); 
-                pieChart.resize(); 
-                monthChart.resize(); 
+                weekChart.resize();
+                pieChart.resize();
+                monthChart.resize();
             }, 100);
         }
     </script>
