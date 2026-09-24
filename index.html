@@ -97,7 +97,7 @@
             height: 100%;
         }
         .header {
-            height: 60px;
+            height: 76px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -109,7 +109,8 @@
             margin-bottom: 10px;
         }
         .header .title {
-            font-size: 24px;
+            font-size: 40px;
+            line-height: 1.2;
             font-weight: 800;
             color: #0f172a;
             letter-spacing: 4px;
@@ -209,7 +210,7 @@
                     <option value="9">9月</option>
                 </select>
             </div>
-            <div class="title">玉汝成出库数据智能看板</div>
+            <div class="title">玉汝成经营管理数据智能看板</div>
             <div class="time" id="liveTime">加载中...</div>
         </div>
         <div class="dashboard-content">
@@ -349,41 +350,40 @@
                 {
                     groupName: "雕铣机",
                     models: [
-                        {name:"5X", qty:17},
-                        {name:"6X", qty:7},
+                        {name:"5X", qty:1, remark:"(订单2台 缺货1台 采购中)"},
+                        {name:"6X", qty:1},
                         {name:"6S", qty:4},
-                        {name:"8Pro", qty:47},
-                        {name:"9Pro", qty:3}
+                        {name:"8Pro", qty:20},
+                        {name:"9Pro", qty:2}
                     ]
                 },
                 {
                     groupName: "扫描仪",
                     models: [
-                        {name:"S03", qty:50},
-                        {name:"S05", qty:71}
+                        {name:"S03", qty:44},
+                        {name:"S05", qty:60, remark:"(订单4台 可用56台)"},
                     ]
                 },
                 {
-                    groupName: "打印机",
+                    groupName: "3D打印机",
                     models: [
-                        {name:"UW-01", qty:51},
-                        {name:"DJ89", qty:36},
-                        {name:"P100", qty:25}
+                        {name:"DJ89", qty:28},
+                        {name:"P100", qty:22}
                     ]
                 },
                 {
                     groupName: "烧结炉",
                     models: [
-                        {name:"F0+", qty:41},
-                        {name:"HS-007", qty:8}
+                        {name:"F10+", qty:18, remark:"(订单8台 可用10台)"},
+                        {name:"HS-007", qty:1}
                     ]
                 },
                 {
                     groupName: "烤瓷炉",
                     models: [
-                        {name:"Px7", qty:74},
-                        {name:"A7+", qty:7},
-                        {name:"C-200", qty:25}
+                        {name:"Phoenix-7", qty:67, remark:"(订单2台 可用65台)"},
+                        {name:"A7+", qty:3},
+                        {name:"C200", qty:22}
                     ]
                 }
             ]
@@ -492,14 +492,26 @@
                     backgroundColor: 'rgba(255, 255, 255, 0.98)',
                     borderColor: '#e2e8f0',
                     borderWidth:1,
-                    formatter: params=>{
+                    formatter: params => {
                         if (!params || params.length === 0) return '';
-                        let res = `<div style="font-weight:bold; font-size:15px">${params[0].axisName}</div>`;
-                        params.forEach(p=>{
-                            if(p.value != null && p.value > 0){
-                                res += `${p.seriesName}：${p.value}<br/>`
+                        const axisLabel = params[0].axisValue ?? params[0].name ?? '';
+                        let res = `<div style="font-weight:bold; font-size:15px">${axisLabel}</div>`;
+                        // 拿到当前分组的model列表，用来匹配remark
+                        const groupData = CONFIG_DATA.stockGroup.find(g => g.groupName === axisLabel);
+                        params.forEach(p => {
+                            if (p.value != null && Number(p.value) > 0) {
+                                const val = Number(p.value);
+                                let line = `<div style="margin:4px 0; color:${p.color};">${p.seriesName}：${val}</div>`;
+                                // 查找备注
+                                if(groupData){
+                                    const modelInfo = groupData.models.find(m => m.name === p.seriesName);
+                                    if(modelInfo && modelInfo.remark){
+                                        line += `<div style="margin:2px 0 4px 18px; color:#ef4444; font-size:14px;">${modelInfo.remark}</div>`;
+                                    }
+                                }
+                                res += line;
                             }
-                        })
+                        });
                         return res;
                     }
                 },
@@ -527,13 +539,48 @@
             // 【修复库存条形图轮播】堆积条形图，只高亮Y轴分类，遍历dataIndex
             function stockCarousel(chartIns, totalYCount){
                 let currentIndex = -1;
+                let prevIndex = -1;
+                const interval = 3000;
                 setInterval(()=>{
                     currentIndex = (currentIndex + 1) % totalYCount;
-                    chartIns.dispatchAction({
-                        type: 'showTip',
-                        dataIndex: currentIndex
-                    });
-                },3000)
+                    const opt = chartIns.getOption();
+                    const seriesCount = (opt && opt.series) ? opt.series.length : 0;
+                    // downplay previous index for all series
+                    if(prevIndex >= 0){
+                        for(let s = 0; s < seriesCount; s++){
+                            try { chartIns.dispatchAction({ type: 'downplay', seriesIndex: s, dataIndex: prevIndex }); } catch(e){}
+                        }
+                    }
+                    // highlight current index for all series
+                    for(let s = 0; s < seriesCount; s++){
+                        try { chartIns.dispatchAction({ type: 'highlight', seriesIndex: s, dataIndex: currentIndex }); } catch(e){}
+                    }
+                    // 隐藏已存在的 tooltip，再根据 yAxis 的 name 显示 axis-trigger 的 tooltip
+                    try { chartIns.dispatchAction({ type: 'hideTip' }); } catch(e){}
+                    try{
+                        // 优先通过查找第一个有值的 series 来触发 showTip
+                        let shown = false;
+                        if(opt && opt.series){
+                            for(let s = 0; s < opt.series.length; s++){
+                                const seriesData = opt.series[s] && opt.series[s].data ? opt.series[s].data : null;
+                                if(seriesData && seriesData[currentIndex] != null && Number(seriesData[currentIndex]) > 0){
+                                    chartIns.dispatchAction({ type: 'showTip', seriesIndex: s, dataIndex: currentIndex });
+                                    shown = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!shown){
+                            // 作为最后手段，尝试按 yAxis 名称触发 axis tooltip
+                            const yAxisData = (opt && opt.yAxis && opt.yAxis[0] && opt.yAxis[0].data) ? opt.yAxis[0].data : null;
+                            const axisName = yAxisData && yAxisData[currentIndex] ? yAxisData[currentIndex] : undefined;
+                            if(axisName !== undefined){
+                                chartIns.dispatchAction({ type: 'showTip', name: axisName });
+                            }
+                        }
+                    } catch(e){}
+                    prevIndex = currentIndex;
+                }, interval);
             }
             // 通用单系列图表轮播（饼图、折线图等）
             function enableCarousel(instance, count) {
