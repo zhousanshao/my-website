@@ -331,26 +331,26 @@
                 '6': { total: 24365397, domestic: 1383695, domesticTarget: 1450000, overseas: 19066128, overseasTarget: 17980000 },
                 '7': { total: 10385220,   domestic: 814727,   domesticTarget: 1450000, overseas: 7907217,   overseasTarget: 18070000 },
                 '8': { total: 15536205, domestic: 800192, domesticTarget: 1500000, overseas: 13333722, overseasTarget: 18540000 },
-                '9': { total: 9660555, domestic: 493775, domesticTarget: 1550000, overseas: 8202485, overseasTarget: 19595000 },
+                '9': { total: 10790315, domestic: 579779, domesticTarget: 1550000, overseas: 8880852, overseasTarget: 19595000 },
             },
-            today: { domestic: 3, overseas: 103},
+            today: { domestic: 1, overseas: 14},
             weekly: {
-                days: [ '周日','周一','周二','周三'],
-                domestic: [5,1,-5,3],
-                overseas: [28,57,113,103]
+                days: ['周一','周二','周三','周四','周日'],
+                domestic: [1,-5,3,7,1],
+                overseas: [57,113,103,56,14]
             },
             materials: [
-                { value: 166, name: '氧化锆', itemStyle: { color: '#3b82f6' } },
-                { value: 97,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
-                { value: 3,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
-                { value: 21,  name: '耗材', itemStyle: { color: '#fbbf24' } },
-                { value: 51,  name: '影像设备', itemStyle: { color: '#f472b6' } }
+                { value: 515, name: '氧化锆', itemStyle: { color: '#3b82f6' } },
+                { value: 227,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
+                { value: 11,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
+                { value: 53,  name: '耗材', itemStyle: { color: '#fbbf24' } },
+                { value: 98,  name: '影像设备', itemStyle: { color: '#f472b6' } }
             ],
             stockGroup: [
                 {
                     groupName: "雕铣机",
                     models: [
-                        {name:"5X", qty:1, remark:"(订单2台 缺货1台 采购中)"},
+                        {name:"5X", qty:5, remark:"(订单2台 可用3台)"},
                         {name:"6X", qty:1},
                         {name:"6S", qty:4},
                         {name:"8Pro", qty:20},
@@ -540,7 +540,7 @@
             function stockCarousel(chartIns, totalYCount){
                 let currentIndex = -1;
                 let prevIndex = -1;
-                const interval = 3000;
+                const interval = 20000;
                 setInterval(()=>{
                     currentIndex = (currentIndex + 1) % totalYCount;
                     const opt = chartIns.getOption();
@@ -590,7 +590,7 @@
                     idx = (idx + 1) % count;
                     instance.dispatchAction({ type: 'highlight', seriesIndex: 0, dataIndex: idx });
                     instance.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: idx });
-                }, 3000);
+                }, 20000);
             }
             stockCarousel(stockChart, stockGroups.length);
             enableCarousel(weekChart, CONFIG_DATA.weekly.days.length);
