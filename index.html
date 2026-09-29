@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>玉汝成出库数据智能看板</title>
+    <title>玉汝成经营管理数据智能看板</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
         * {
@@ -331,13 +331,13 @@
                 '6': { total: 24365397, domestic: 1383695, domesticTarget: 1450000, overseas: 19066128, overseasTarget: 17980000 },
                 '7': { total: 10385220,   domestic: 814727,   domesticTarget: 1450000, overseas: 7907217,   overseasTarget: 18070000 },
                 '8': { total: 15536205, domestic: 800192, domesticTarget: 1500000, overseas: 13333722, overseasTarget: 18540000 },
-                '9': { total: 10790315, domestic: 579779, domesticTarget: 1550000, overseas: 8915565, overseasTarget: 19595000 },
+                '9': { total: 12279807, domestic: 623440, domesticTarget: 1550000, overseas: 9613923, overseasTarget: 19595000 },
             },
-            today: { domestic: 1, overseas: 14},
+            today: { domestic: 4, overseas: 69},
             weekly: {
-                days: ['周一','周二','周三','周四','周日'],
-                domestic: [1,-5,3,7,1],
-                overseas: [57,113,103,56,14]
+                days: ['周日','周一'],
+                domestic: [1,4],
+                overseas: [14,69]
             },
             materials: [
                 { value: 515, name: '氧化锆', itemStyle: { color: '#3b82f6' } },
@@ -353,7 +353,7 @@
                         {name:"5X", qty:5, remark:"(订单2台 可用3台)"},
                         {name:"6X", qty:1},
                         {name:"6S", qty:4},
-                        {name:"8Pro", qty:20},
+                        {name:"8Pro", qty:42, remark:"(订单3台 可用39台)"},
                         {name:"9Pro", qty:2}
                     ]
                 },
@@ -361,27 +361,27 @@
                     groupName: "扫描仪",
                     models: [
                         {name:"S03", qty:44},
-                        {name:"S05", qty:60, remark:"(订单4台 可用56台)"},
+                        {name:"S05", qty:53, remark:"(订单8台 可用45台)"},
                     ]
                 },
                 {
                     groupName: "3D打印机",
                     models: [
                         {name:"DJ89", qty:28},
-                        {name:"P100", qty:22}
+                        {name:"P100", qty:24, remark:"(订单1台 可用23台)"},
                     ]
                 },
                 {
                     groupName: "烧结炉",
                     models: [
-                        {name:"F10+", qty:18, remark:"(订单8台 可用10台)"},
-                        {name:"HS-007", qty:1}
+                        {name:"F10+", qty:23, remark:"(订单13台 可用10台)"},
+                        {name:"HS-007", qty:3}
                     ]
                 },
                 {
                     groupName: "烤瓷炉",
                     models: [
-                        {name:"Phoenix-7", qty:67, remark:"(订单2台 可用65台)"},
+                        {name:"Phoenix-7", qty:71, remark:"(订单3台 可用68台)"},
                         {name:"A7+", qty:3},
                         {name:"C200", qty:22}
                     ]
