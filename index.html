@@ -198,7 +198,7 @@
                     数据筛选:
                 </span>
                 <select class="month-select" id="monthSelector" onchange="onMonthChange(this.value)">
-                    <option value="all">选择月份 (1-8月)</option>
+                    <option value="all">选择月份 (1-10月)</option>
                     <option value="1">1月</option>
                     <option value="2">2月</option>
                     <option value="3">3月</option>
@@ -208,6 +208,7 @@
                     <option value="7">7月</option>
                     <option value="8">8月</option>
                     <option value="9">9月</option>
+                    <option value="10">10月</option>
                 </select>
             </div>
             <div class="title">玉汝成经营管理数据智能看板</div>
@@ -332,28 +333,29 @@
                 '7': { total: 10385220,   domestic: 814727,   domesticTarget: 1450000, overseas: 7907217,   overseasTarget: 18070000 },
                 '8': { total: 15536205, domestic: 800192, domesticTarget: 1500000, overseas: 13333722, overseasTarget: 18540000 },
                 '9': { total: 19606425, domestic: 1021087, domesticTarget: 1550000, overseas: 16234104, overseasTarget: 19595000 },
+                '10': { total: 580788, domestic: 5417, domesticTarget: 1600000, overseas: 575371, overseasTarget: 20650000 },
             },
-            today: { domestic: 20, overseas: 391},
+            today: { domestic: 3, overseas: 36},
             weekly: {
-                days: ['周日','周一','周二','周三'],
-                domestic: [1,4,6,20],
-                overseas: [14,69,270,391]
+                days: ['周三','周四','周五'],
+                domestic: [0,4,3],
+                overseas: [16,5,36]
             },
             materials: [
-                { value: 515, name: '氧化锆', itemStyle: { color: '#3b82f6' } },
-                { value: 227,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
-                { value: 11,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
-                { value: 53,  name: '耗材', itemStyle: { color: '#fbbf24' } },
-                { value: 98,  name: '影像设备', itemStyle: { color: '#f472b6' } }
+                { value: 8, name: '氧化锆', itemStyle: { color: '#3b82f6' } },
+                { value: 2,  name: '雕铣机', itemStyle: { color: '#60a5fa' } },
+                { value: 1,  name: '玻璃陶瓷', itemStyle: { color: '#34d399' } },
+                { value: 1,  name: '耗材', itemStyle: { color: '#fbbf24' } },
+                { value: 5,  name: '影像设备', itemStyle: { color: '#f472b6' } }
             ],
             stockGroup: [
                 {
                     groupName: "雕铣机",
                     models: [
-                        {name:"5X", qty:5, remark:"(订单2台 可用3台)"},
+                        {name:"5X", qty:1, remark:"(订单0台 可用1台)"},
                         {name:"6X", qty:1},
                         {name:"6S", qty:4},
-                        {name:"8Pro", qty:42, remark:"(订单3台 可用39台)"},
+                        {name:"8Pro", qty:23, remark:"(订单0台 可用23台)"},
                         {name:"9Pro", qty:2}
                     ]
                 },
@@ -361,7 +363,7 @@
                     groupName: "扫描仪",
                     models: [
                         {name:"S03", qty:44},
-                        {name:"S05", qty:53, remark:"(订单8台 可用45台)"},
+                        {name:"S05", qty:42, remark:"(订单3台 可用39台)"},
                     ]
                 },
                 {
@@ -374,7 +376,7 @@
                 {
                     groupName: "烧结炉",
                     models: [
-                        {name:"F10+", qty:23, remark:"(订单13台 可用10台)"},
+                        {name:"F10+", qty:2},
                         {name:"HS-007", qty:1}
                     ]
                 },
@@ -383,7 +385,7 @@
                     models: [
                         {name:"Phoenix-7", qty:71, remark:"(订单3台 可用68台)"},
                         {name:"A7+", qty:3},
-                        {name:"C200", qty:22, remark:"(订单2台 可用20台)"},
+                        {name:"C200", qty:22, remark:"(订单3台 可用19台)"},
                     ]
                 }
             ]
